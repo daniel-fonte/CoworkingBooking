@@ -1,0 +1,9 @@
+<Solution>
+	<Project Path="CoworkingBooking.Api/CoworkingBooking.Api.csproj" />
+	<Project Path="CoworkingBooking.Application/CoworkingBooking.Application.csproj" />
+	<Project Path="CoworkingBooking.Contracts/CoworkingBooking.Contracts.csproj" />
+	<Project Path="CoworkingBooking.Core/CoworkingBooking.Core.csproj" />
+	<Project Path="CoworkingBooking.Infrastructure/CoworkingBooking.Infrastructure.csproj" />
+	<Project Path="CoworkingBooking.Shared/CoworkingBooking.Shared.csproj" />
+	<Project Path="CoworkingBooking.Workers/CoworkingBooking.Workers.csproj" />
+</Solution>

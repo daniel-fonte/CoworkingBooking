@@ -1,0 +1,37 @@
+## Build
+[Bb]in/
+[Oo]bj/
+[Dd]ebug/
+[Rr]elease/
+artifacts/
+*.dll
+*.pdb
+*.exe
+
+## Visual Studio / Rider / VS Code
+.vs/
+.idea/
+*.user
+*.suo
+*.userprefs
+.vscode/*
+!.vscode/launch.json
+!.vscode/tasks.json
+!.vscode/extensions.json
+
+## NuGet
+*.nupkg
+packages/
+.nuget/
+
+## .NET user secrets / config local
+*.local.json
+appsettings.*.local.json
+
+## Projeto - dados de infra local
+backend/volume/
+backend/docker/mongo-keyfile
+
+## SO
+.DS_Store
+Thumbs.db

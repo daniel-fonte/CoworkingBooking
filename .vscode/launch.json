@@ -1,0 +1,39 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Api",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build-api",
+      "program": "${workspaceFolder}/backend/CoworkingBooking.Api/bin/Debug/net10.0/CoworkingBooking.Api.dll",
+      "cwd": "${workspaceFolder}/backend/CoworkingBooking.Api",
+      "env": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "ASPNETCORE_URLS": "http://localhost:5058"
+      },
+      "console": "internalConsole",
+      "stopAtEntry": false
+    },
+    {
+      "name": "Workers",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build-workers",
+      "program": "${workspaceFolder}/backend/CoworkingBooking.Workers/bin/Debug/net10.0/CoworkingBooking.Workers.dll",
+      "cwd": "${workspaceFolder}/backend/CoworkingBooking.Workers",
+      "env": {
+        "DOTNET_ENVIRONMENT": "Development"
+      },
+      "console": "internalConsole",
+      "stopAtEntry": false
+    }
+  ],
+  "compounds": [
+    {
+      "name": "Api + Workers",
+      "configurations": ["Api", "Workers"],
+      "stopAll": true
+    }
+  ]
+}

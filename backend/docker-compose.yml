@@ -1,0 +1,122 @@
+services:
+
+  mongo1:
+    image: mongo:8.0
+    container_name: mongo1
+    entrypoint: >
+      bash -c "
+        cp /etc/mongo-keyfile-source /etc/mongo-keyfile
+        chmod 400 /etc/mongo-keyfile
+        chown 999:999 /etc/mongo-keyfile
+        exec docker-entrypoint.sh mongod --replSet rs0 --bind_ip_all --port 27017 --keyFile /etc/mongo-keyfile
+      "
+    ports:
+      - 27017:27017
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: root
+    healthcheck:
+      test: echo "try { rs.status() } catch (err) { rs.initiate({_id:'rs0',members:[{_id:0,host:'host.docker.internal:27017',priority:1},{_id:1,host:'host.docker.internal:27018',priority:0.5},{_id:2,host:'host.docker.internal:27019',priority:0.5}]}) }" | mongosh --port 27017 -u root -p root --authenticationDatabase admin --quiet
+      interval: 5s
+      timeout: 30s
+      start_period: 0s
+      start_interval: 1s
+      retries: 30
+    volumes:
+      - ./docker/mongo-keyfile:/etc/mongo-keyfile-source:ro
+      - mongo1-data:/data/db
+    networks:
+      - mongo-net
+
+  mongo2:
+    image: mongo:8.0
+    container_name: mongo2
+    entrypoint: >
+      bash -c "
+        cp /etc/mongo-keyfile-source /etc/mongo-keyfile
+        chmod 400 /etc/mongo-keyfile
+        chown 999:999 /etc/mongo-keyfile
+        exec mongod --replSet rs0 --bind_ip_all --port 27018 --keyFile /etc/mongo-keyfile
+      "
+    ports:
+      - 27018:27018
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - ./docker/mongo-keyfile:/etc/mongo-keyfile-source:ro
+      - mongo2-data:/data/db
+    networks:
+      - mongo-net
+
+  mongo3:
+    image: mongo:8.0
+    container_name: mongo3
+    entrypoint: >
+      bash -c "
+        cp /etc/mongo-keyfile-source /etc/mongo-keyfile
+        chmod 400 /etc/mongo-keyfile
+        chown 999:999 /etc/mongo-keyfile
+        exec mongod --replSet rs0 --bind_ip_all --port 27019 --keyFile /etc/mongo-keyfile
+      "
+    ports:
+      - 27019:27019
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - ./docker/mongo-keyfile:/etc/mongo-keyfile-source:ro
+      - mongo3-data:/data/d
+    networks:
+      - mongo-net
+  seq:
+    image: datalust/seq:latest
+    container_name: seq
+    environment:
+      ACCEPT_EULA: Y
+      SEQ_FIRSTRUN_ADMINPASSWORD: root
+    ports:
+      - "5341:5341"
+      - "8081:80"
+    volumes:
+      - seq-data:/data
+  localstack:
+    container_name: localstack
+    image: localstack/localstack
+    ports:
+      - "127.0.0.1:4566:4566" # LocalStack Gateway
+      - "127.0.0.1:4510-4559:4510-4559" # external services port range
+      - "127.0.0.1:53:53" # DNS config (only required for Pro)
+      - "127.0.0.1:53:53/udp" # DNS config (only required for Pro)
+      - "127.0.0.1:443:443" # LocalStack HTTPS Gateway (only required for Pro)
+    environment:
+      - DEBUG=${DEBUG-}
+      - PERSISTENCE=1
+      - LAMBDA_EXECUTOR=${LAMBDA_EXECUTOR-}
+      - SERVICES=sqs
+      - AWS_DEFAULT_REGION=us-east-1
+      # - LOCALSTACK_API_KEY=${LOCALSTACK_API_KEY-} # only required for Pro
+      - DOCKER_HOST=unix:///var/run/docker.sock
+    volumes:
+      - '${LOCALSTACK_VOLUME_DIR:-./volume}:/var/lib/localstack'
+      - '/var/run/docker.sock:/var/run/docker.sock'
+      - ./docker/localstack/init-aws.sh:/etc/localstack/init/ready.d/init-aws.sh
+  sqs-admin:
+    image: pacovk/sqs-admin
+    ports:
+      - "3999:3999"
+    environment:
+      SQS_ENDPOINT_URL: "http://localstack:4566"
+      SQS_AWS_REGION: "us-east-1"
+    depends_on:
+      - localstack
+
+volumes:
+  seq-data:
+  mongo1-data:
+  mongo2-data:
+  mongo3-data:
+
+networks:
+  mongo-net:
+    driver: bridge
