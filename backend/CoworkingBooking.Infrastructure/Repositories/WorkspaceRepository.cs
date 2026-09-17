@@ -1,3 +1,4 @@
+using CoworkingBooking.Core.Workspace.Constraints;
 using CoworkingBooking.Core.Workspace.Entities;
 using CoworkingBooking.Core.Workspace.Repositories;
 using CoworkingBooking.Infraestructure.Mappers;
@@ -58,10 +59,10 @@ namespace CoworkingBooking.Infraestructure.Repositories
 
         public async Task<WorkspaceEntity> InsertOne(WorkspaceEntity workspace)
         {
-            try
-            {
-                var workspaceModel = workspacePersistenceMapper.ToModel(workspace);
+            var workspaceModel = workspacePersistenceMapper.ToModel(workspace);
 
+            try
+            {    
                 await _collection.InsertOneAsync(workspaceModel);
 
                 return workspacePersistenceMapper.ToEntity(workspaceModel);
@@ -70,7 +71,7 @@ namespace CoworkingBooking.Infraestructure.Repositories
             {
                 if(ex.WriteError.Category is ServerErrorCategory.DuplicateKey)
                 {
-                    throw new DuplicateKeyException(ex.WriteError.Message, workspace.Name, ex);
+                    throw new DuplicateKeyException([WorkspaceConstraints.Slug], workspaceModel.Name, ex);
                 }
 
                 throw;

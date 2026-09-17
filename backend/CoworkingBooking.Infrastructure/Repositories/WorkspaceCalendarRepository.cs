@@ -1,10 +1,5 @@
-using CoworkingBooking.Core.WorkspaceCalendar.Entities;
-using CoworkingBooking.Core.WorkspaceCalendar.Repositories;
-using CoworkingBooking.Infraestructure.Mappers;
-using CoworkingBooking.Infraestructure.Models;
-using CoworkingBooking.Infraestructure.Providers;
-using CoworkingBooking.Shared.Exceptions;
-using MongoDB.Driver;
+using System.Globalization;
+using System.Text.Json.Nodes;
 
 namespace CoworkingBooking.Infraestructure
 {
@@ -32,12 +27,13 @@ namespace CoworkingBooking.Infraestructure
 
         public async Task<long> InsertMany(List<WorkspaceCalendarEntity> workspaceCalendars, IClientSessionHandle? session = null)
         {
+            var insertModels = workspaceCalendars
+                .Select(w => workspaceCalendarPersistenceMapper.ToModel(w))
+                .Select(w => new InsertOneModel<WorkspaceCalendarModel>(w))
+                .ToList();
+
             try
             {
-                var workspacesCalendarModels = workspaceCalendars.Select(w => workspaceCalendarPersistenceMapper.ToModel(w));
-
-                var insertModels = workspacesCalendarModels.Select(w =>  new InsertOneModel<WorkspaceCalendarModel>(w));
-
                 var options = new BulkWriteOptions 
                 { 
                     IsOrdered = false
@@ -55,7 +51,25 @@ namespace CoworkingBooking.Infraestructure
                 {
                     if (error.Category == ServerErrorCategory.DuplicateKey)
                     {
-                        errors.Add(new DuplicateKeyException(error.Index.ToString(), error.Code.ToString(), ex));
+                        var workspaceCalendarFailed = insertModels[error.Index].Document;
+
+                        var value = new JsonObject();
+                        value["StartAt"] = workspaceCalendarFailed.StartAt.ToString("yyyy-MM-ddTHH:mm:ss.fffK", CultureInfo.InvariantCulture);
+                        value["EndAt"] = workspaceCalendarFailed.EndAt.ToString("yyyy-MM-ddTHH:mm:ss.fffK", CultureInfo.InvariantCulture);
+                        value["WorkspaceId"] = workspaceCalendarFailed.WorkspaceId;
+
+
+                        errors.Add(
+                            new DuplicateKeyException(
+                                [
+                                    WorkspaceCalendarConstraints.StartAt,
+                                    WorkspaceCalendarConstraints.EndAt,
+                                    WorkspaceCalendarConstraints.WorkspaceId
+                                ], 
+                                value.ToJsonString(), 
+                                ex
+                            )
+                        );
                     }
                     else
                     {

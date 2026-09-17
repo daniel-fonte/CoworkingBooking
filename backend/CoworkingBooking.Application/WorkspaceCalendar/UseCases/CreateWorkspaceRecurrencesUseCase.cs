@@ -34,14 +34,6 @@ namespace CoworkingBooking.Application.WorkspaceCalendar.UseCases
 
             try
             {
-                WorkspaceCalendarEntity firsWorkspaceCalendarEntity = new WorkspaceCalendarEntity(
-                    workspaceId: data.WorkspaceId,
-                    startAt: data.WorkSpaceAvailability.StartAt,
-                    endAt: data.WorkSpaceAvailability.EndAt
-                );
-
-                workspaceCalendarList.Add(firsWorkspaceCalendarEntity);
-
                 var timeZone = TimeZoneInfo.FindSystemTimeZoneById(data.WorkSpaceAvailability.Timezone);
 
                 var currentStartAt = TimeZoneInfo.ConvertTimeFromUtc(data.WorkSpaceAvailability.StartAt, timeZone);
@@ -70,6 +62,14 @@ namespace CoworkingBooking.Application.WorkspaceCalendar.UseCases
 
                 if (data.WorkSpaceAvailability.Recurrence.Frequency == Frequency.DAILY && data.WorkSpaceAvailability.Recurrence.ByDay is null)
                 {
+                    WorkspaceCalendarEntity firsWorkspaceCalendarEntity = new WorkspaceCalendarEntity(
+                        workspaceId: data.WorkspaceId,
+                        startAt: data.WorkSpaceAvailability.StartAt,
+                        endAt: data.WorkSpaceAvailability.EndAt
+                    );
+
+                    workspaceCalendarList.Add(firsWorkspaceCalendarEntity);
+                    
                     while (DateOnly.FromDateTime(currentStartAt) < DateOnly.FromDateTime(untilOnTimezone))
                     {
                         WorkspaceCalendarEntity workspaceCalendarEntity = new WorkspaceCalendarEntity(
