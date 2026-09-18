@@ -4,7 +4,7 @@ namespace CoworkingBooking.Workers.Utils
     {
         public static DateTime GetNextDay(DateTime dateTime, DayOfWeek? targetDay)
         {
-            int daysUntil = 7;
+            int daysUntil = 1;
 
             if (targetDay is not null)
             {

@@ -1,5 +1,13 @@
 using System.Globalization;
 using System.Text.Json.Nodes;
+using CoworkingBooking.Core.WorkspaceCalendar.Constraints;
+using CoworkingBooking.Core.WorkspaceCalendar.Entities;
+using CoworkingBooking.Core.WorkspaceCalendar.Repositories;
+using CoworkingBooking.Infraestructure.Mappers;
+using CoworkingBooking.Infraestructure.Models;
+using CoworkingBooking.Infraestructure.Providers;
+using CoworkingBooking.Shared.Exceptions;
+using MongoDB.Driver;
 
 namespace CoworkingBooking.Infraestructure
 {
@@ -39,7 +47,16 @@ namespace CoworkingBooking.Infraestructure
                     IsOrdered = false
                 };
 
-                BulkWriteResult result = await _collection.BulkWriteAsync(session, insertModels, options);
+                BulkWriteResult result;
+
+                if (session is not null)
+                {
+                    result = await _collection.BulkWriteAsync(session, insertModels, options);
+                }
+                else
+                {
+                    result = await _collection.BulkWriteAsync(insertModels, options);
+                }
 
                 return result.InsertedCount;
             }
@@ -57,7 +74,6 @@ namespace CoworkingBooking.Infraestructure
                         value["StartAt"] = workspaceCalendarFailed.StartAt.ToString("yyyy-MM-ddTHH:mm:ss.fffK", CultureInfo.InvariantCulture);
                         value["EndAt"] = workspaceCalendarFailed.EndAt.ToString("yyyy-MM-ddTHH:mm:ss.fffK", CultureInfo.InvariantCulture);
                         value["WorkspaceId"] = workspaceCalendarFailed.WorkspaceId;
-
 
                         errors.Add(
                             new DuplicateKeyException(

@@ -36,26 +36,33 @@ namespace CoworkingBooking.Application.WorkspaceCalendar.UseCases
             {
                 var timeZone = TimeZoneInfo.FindSystemTimeZoneById(data.WorkSpaceAvailability.Timezone);
 
-                var currentStartAt = TimeZoneInfo.ConvertTimeFromUtc(data.WorkSpaceAvailability.StartAt, timeZone);
-                var currentEndAt = TimeZoneInfo.ConvertTimeFromUtc(data.WorkSpaceAvailability.EndAt, timeZone);
-                var untilOnTimezone = TimeZoneInfo.ConvertTimeFromUtc(data.WorkSpaceAvailability.Recurrence.Until, timeZone);
+                var currentStartAtLocal = TimeZoneInfo.ConvertTimeFromUtc(data.WorkSpaceAvailability.StartAt, timeZone);
+                var currentEndAtLocal = TimeZoneInfo.ConvertTimeFromUtc(data.WorkSpaceAvailability.EndAt, timeZone);
+
+                var untilAtLocal = TimeZoneInfo.ConvertTimeFromUtc(data.WorkSpaceAvailability.Recurrence.Until, timeZone);
                 
                 if (data.WorkSpaceAvailability.Recurrence.Frequency == Frequency.WEEKLY && data.WorkSpaceAvailability.Recurrence.ByDay is not null)
                 {
                     data.WorkSpaceAvailability.Recurrence.ByDay.ForEach(day =>
                     {
-                        while (DateOnly.FromDateTime(currentStartAt) < DateOnly.FromDateTime(DatesUtils.GetClosestDayOfWeek(untilOnTimezone, day)))
+                        while (DateOnly.FromDateTime(currentStartAtLocal) < DateOnly.FromDateTime(DatesUtils.GetClosestDayOfWeek(untilAtLocal, day)))
                         {
-                            WorkspaceCalendarEntity workspaceCalendarEntity = new WorkspaceCalendarEntity(
+                            var nextStartAtLocal = DatesUtils.GetNextDay(currentStartAtLocal, day);
+                            var nextEndAtLocal = DatesUtils.GetNextDay(currentEndAtLocal, day);
+
+                            var nextStartAtUtc = TimeZoneInfo.ConvertTimeToUtc(nextStartAtLocal, timeZone);
+                            var nextEndAtUtc = TimeZoneInfo.ConvertTimeToUtc(nextEndAtLocal, timeZone);
+
+                            var workspaceCalendarEntity = new WorkspaceCalendarEntity(
                                 workspaceId: data.WorkspaceId,
-                                startAt: DatesUtils.GetNextDay(TimeZoneInfo.ConvertTimeFromUtc(currentStartAt, timeZone), day),
-                                endAt: DatesUtils.GetNextDay(TimeZoneInfo.ConvertTimeFromUtc(currentEndAt, timeZone), day)
+                                startAt: nextStartAtUtc,
+                                endAt: nextEndAtUtc
                             );
 
                             workspaceCalendarList.Add(workspaceCalendarEntity);
 
-                            currentStartAt = DatesUtils.GetNextDay(TimeZoneInfo.ConvertTimeFromUtc(currentStartAt, timeZone), day);
-                            currentEndAt = DatesUtils.GetNextDay(TimeZoneInfo.ConvertTimeFromUtc(currentEndAt, timeZone), day);
+                            currentStartAtLocal = nextStartAtLocal;
+                            currentEndAtLocal = nextEndAtLocal;
                         }
                     });
                 }
@@ -70,24 +77,31 @@ namespace CoworkingBooking.Application.WorkspaceCalendar.UseCases
 
                     workspaceCalendarList.Add(firsWorkspaceCalendarEntity);
                     
-                    while (DateOnly.FromDateTime(currentStartAt) < DateOnly.FromDateTime(untilOnTimezone))
+                    while (DateOnly.FromDateTime(currentStartAtLocal) < DateOnly.FromDateTime(untilAtLocal))
                     {
+                        var nextStartAtLocal = DatesUtils.GetNextDay(currentStartAtLocal, null);
+                        var nextEndAtLocal = DatesUtils.GetNextDay(currentEndAtLocal, null);
+
+                        var nextStartAtUtc = TimeZoneInfo.ConvertTimeToUtc(nextStartAtLocal, timeZone);
+                        var nextEndAtUtc = TimeZoneInfo.ConvertTimeToUtc(nextEndAtLocal, timeZone);
+
                         WorkspaceCalendarEntity workspaceCalendarEntity = new WorkspaceCalendarEntity(
                             workspaceId: data.WorkspaceId,
-                            startAt: DatesUtils.GetNextDay(TimeZoneInfo.ConvertTimeFromUtc(currentStartAt, timeZone), null),
-                            endAt: DatesUtils.GetNextDay(TimeZoneInfo.ConvertTimeFromUtc(currentEndAt, timeZone), null)
+                            startAt: nextStartAtUtc,
+                            endAt: nextEndAtUtc
                         );
 
                         workspaceCalendarList.Add(workspaceCalendarEntity);
 
-                        currentStartAt = DatesUtils.GetNextDay(TimeZoneInfo.ConvertTimeFromUtc(currentStartAt, timeZone), null);
-                        currentEndAt = DatesUtils.GetNextDay(TimeZoneInfo.ConvertTimeFromUtc(currentEndAt, timeZone), null);
+                        currentStartAtLocal = nextStartAtLocal;
+                        currentEndAtLocal = nextEndAtLocal;
                     }
                 }
             }
-            catch (System.Exception)
+            catch (System.Exception ex)
             {
-                throw;
+                logger.LogError(ex, "Unexpected error occured.");
+                return Result<bool>.Failure(new List<Error> { new Error(ex.Message, ErrorType.InternalServerError) });
             }
 
             try
@@ -124,8 +138,7 @@ namespace CoworkingBooking.Application.WorkspaceCalendar.UseCases
             }
             catch (Exception ex)
             {
-                this.logger.LogError("Unexpted error ocurred: {ex}", ex);
-
+                this.logger.LogError(ex, "Unexpted error ocurred");
                 return Result<bool>.Failure(new List<Error> { new Error(ex.Message, ErrorType.InternalServerError) });
             }
         }

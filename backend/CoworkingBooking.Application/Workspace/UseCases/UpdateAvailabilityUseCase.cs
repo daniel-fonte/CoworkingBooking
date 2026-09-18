@@ -1,12 +1,12 @@
 using CoworkingBooking.Application.Interfaces;
-using CoworkingBooking.Core.Workspace.Repositories;
 using CoworkingBooking.Application.Workspace.Dtos;
-using CoworkingBooking.Shared.Classes;
-using FluentValidation;
 using CoworkingBooking.Application.Workspace.Mappers;
-using Microsoft.Extensions.Logging;
 using CoworkingBooking.Core.Workspace.Events;
+using CoworkingBooking.Core.Workspace.Repositories;
+using CoworkingBooking.Shared.Classes;
 using CoworkingBooking.Shared.Interfaces;
+using FluentValidation;
+using Microsoft.Extensions.Logging;
 
 namespace CoworkingBooking.Application.Workspace.UseCases
 {
