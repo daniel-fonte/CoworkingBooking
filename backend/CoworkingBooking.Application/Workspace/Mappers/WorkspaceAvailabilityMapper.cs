@@ -49,11 +49,5 @@ namespace CoworkingBooking.Application.Workspace.Mappers
                 availability.Timezone
             );
         }
-
-        private int DayOfWeekEnum(DayOfWeek dayOfWeek)
-        {
-            return (int)dayOfWeek;
-        }
-
     }
 }

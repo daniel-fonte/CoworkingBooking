@@ -1,4 +1,3 @@
-using CoworkingBooking.Core.Workspace.Entities;
 using CoworkingBooking.Shared.Enums;
 
 namespace CoworkingBooking.Application.Workspace.Dtos

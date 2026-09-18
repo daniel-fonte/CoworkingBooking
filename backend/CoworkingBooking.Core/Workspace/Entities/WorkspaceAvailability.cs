@@ -65,6 +65,8 @@ namespace CoworkingBooking.Core.Workspace.Entities
             this.ByDay = byDay is null ? byDay : ValidateByDay(byDay);
             this.ByMonth = byMonth is null ? byMonth: ValidateByMonth(byMonth);
             this.Interval = 1;
+
+            Validate();
         }
 
 
@@ -108,6 +110,35 @@ namespace CoworkingBooking.Core.Workspace.Entities
             });
 
             return value;
+        }
+
+        private void Validate()
+        {
+            if (this.Frequency == Frequency.DAILY)
+            {
+                if (this.ByDay != null)
+                {
+                    throw new ArgumentException("ByDay must be null when Frequency is Daily");
+                }
+
+                if (this.ByMonth != null)
+                {
+                    throw new ArgumentException("ByMonth must be null when Frequency is Daily");
+                }
+            }
+
+            if (this.Frequency == Frequency.WEEKLY)
+            {
+                if (this.ByDay == null)
+                {
+                    throw new ArgumentException("ByDay must be set when Frequency is Weekly");
+                }
+
+                if (this.ByMonth == null)
+                {
+                    throw new ArgumentException("ByMonth must be set when Frequency is Weekly");
+                }
+            }
         }
 
     }

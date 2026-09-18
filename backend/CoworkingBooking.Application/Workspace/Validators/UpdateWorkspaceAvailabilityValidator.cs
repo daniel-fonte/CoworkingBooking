@@ -1,4 +1,5 @@
 using CoworkingBooking.Application.Workspace.Dtos;
+using CoworkingBooking.Shared.Enums;
 using FluentValidation;
 using System.Globalization;
 
@@ -16,32 +17,48 @@ namespace CoworkingBooking.Application.Workspace.Validators
                 .NotEmpty()
                 .Must(BeAValidIsoString);
 
-            RuleFor(availability => availability.Until)
+            RuleFor(availability => availability.Frequency)
                 .NotEmpty()
-                .Must(BeAValidIsoString);
+                .IsInEnum();
 
             RuleFor(availability => availability.Timezone)
                 .NotEmpty();
 
-            When(availability => availability.ByDay != null, () =>
+            When(availability => availability.Frequency == Frequency.DAILY, () =>
+            {
+                RuleFor(availability => availability.ByDay)
+                    .Null();
+                
+                RuleFor(availability => availability.ByMonth)
+                    .Null();
+
+                RuleFor(availability => availability.Until)
+                    .NotEmpty()
+                    .Must(BeAValidIsoString);
+            });
+
+            When(availability => availability.Frequency == Frequency.WEEKLY, () =>
             {
                 RuleFor(availability => availability.ByDay)
                     .NotEmpty();
 
                 RuleForEach(availability => availability.ByDay)
                     .IsInEnum();
-            });
 
-            When(availability => availability.ByMonth != null, () =>
-            {
-                RuleFor(availability => availability.ByMonth)
-                    .NotEmpty();
+                When(availability => availability.ByMonth != null, () =>
+                {
+                    RuleFor(availability => availability.ByMonth)
+                        .NotEmpty();
 
-                RuleForEach(availability => availability.ByMonth)
-                    .NotEmpty()
-                    .InclusiveBetween(1, 12);
+                    RuleForEach(availability => availability.ByMonth)
+                        .NotEmpty()
+                        .InclusiveBetween(1, 12);
+
+                    RuleFor(availability => availability.Until)
+                        .NotEmpty()
+                        .Must(BeAValidIsoString);
+                });
             });
-                
         }
 
         private bool BeAValidIsoString(string? dateString)
