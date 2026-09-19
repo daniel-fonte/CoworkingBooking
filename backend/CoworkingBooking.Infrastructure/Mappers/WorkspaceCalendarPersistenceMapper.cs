@@ -18,5 +18,18 @@ namespace CoworkingBooking.Infraestructure.Mappers
                 UpdatedAt = entity.UpdatedAt
             };
         }
+
+        public WorkspaceCalendarEntity ToEntity(WorkspaceCalendarModel model)
+        {
+            return WorkspaceCalendarEntity.Rehydrate(
+                id: model.Id,
+                workspaceId: model.WorkspaceId,
+                startAt: model.StartAt,
+                endAt: model.EndAt,
+                isFull: model.IsFull,
+                createdAt: model.CreatedAt,
+                updatedAt: model.UpdatedAt
+            );
+        }
     }
 }

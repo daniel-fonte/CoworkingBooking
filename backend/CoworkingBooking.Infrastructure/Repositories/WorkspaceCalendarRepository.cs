@@ -96,5 +96,17 @@ namespace CoworkingBooking.Infraestructure
                 throw new BulkWriteException(errors, ex);
             }
         }
+
+        public async Task<List<WorkspaceCalendarEntity>> FindByWorkspaceAvailability(string workspaceId, DateTime startAt, DateTime until)
+        {
+            var filter =
+                Builders<WorkspaceCalendarModel>.Filter.Eq(wc => wc.WorkspaceId, workspaceId) &
+                Builders<WorkspaceCalendarModel>.Filter.Gte(wc => wc.StartAt, startAt) &
+                Builders<WorkspaceCalendarModel>.Filter.Lte(wc => wc.StartAt, until);
+
+            var result = await _collection.Find(filter).ToListAsync();
+
+            return result.Select(r => workspaceCalendarPersistenceMapper.ToEntity(r)).ToList();
+        }
     }
 }

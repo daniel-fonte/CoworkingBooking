@@ -26,6 +26,27 @@ namespace CoworkingBooking.Core.WorkspaceCalendar.Entities
             this.IsFull = false;
         }
 
+        public static WorkspaceCalendarEntity Rehydrate(
+            string id,
+            string workspaceId,
+            DateTime startAt,
+            DateTime endAt,
+            bool isFull,
+            DateTime createdAt,
+            DateTime updatedAt
+        )
+        {
+            var entity = new WorkspaceCalendarEntity(workspaceId, startAt, endAt)
+            {
+                Id = id,
+                IsFull = isFull,
+                CreatedAt = createdAt,
+                UpdatedAt = updatedAt
+            };
+
+            return entity;
+        }
+
         private static string NormalizeRequired(string value, string propertyName)
         {
             return string.IsNullOrWhiteSpace(value)

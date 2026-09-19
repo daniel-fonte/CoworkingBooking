@@ -1,6 +1,8 @@
+using System.Globalization;
 using CoworkingBooking.Application.Interfaces;
 using CoworkingBooking.Application.Workspace.Dtos;
 using CoworkingBooking.Application.Workspace.Mappers;
+using CoworkingBooking.Application.Workspace.Ports;
 using CoworkingBooking.Core.Workspace.Events;
 using CoworkingBooking.Core.Workspace.Repositories;
 using CoworkingBooking.Shared.Classes;
@@ -19,6 +21,7 @@ namespace CoworkingBooking.Application.Workspace.UseCases
         private readonly WorkspaceAvailabilityRecurrenceMapper workspaceAvailabilityRecurrenceMapper;
         private readonly ILogger<UpdateAvailabilityUseCase> logger;
         private readonly IPublish updatedWorkspaceAvailabilityPublish;
+        private readonly IWorkspaceCalendarExistenceCheckerPort workspaceCalendarExistenceChecker;
 
         public UpdateAvailabilityUseCase(
             IWorkspaceRepository workspaceRepository,
@@ -27,7 +30,8 @@ namespace CoworkingBooking.Application.Workspace.UseCases
             WorkspaceAvailabilityMapper workspaceAvailabilityMapper,
             WorkspaceAvailabilityRecurrenceMapper workspaceAvailabilityRecurrenceMapper,
             ILogger<UpdateAvailabilityUseCase> logger,
-            IPublish updatedWorkspaceAvailabilityPublish
+            IPublish updatedWorkspaceAvailabilityPublish,
+            IWorkspaceCalendarExistenceCheckerPort workspaceCalendarExistenceChecker
         ) {
             this.workspaceRepository = workspaceRepository;
             this.validator = validator;
@@ -36,6 +40,7 @@ namespace CoworkingBooking.Application.Workspace.UseCases
             this.workspaceAvailabilityMapper = workspaceAvailabilityMapper;
             this.logger = logger;
             this.updatedWorkspaceAvailabilityPublish = updatedWorkspaceAvailabilityPublish;
+            this.workspaceCalendarExistenceChecker = workspaceCalendarExistenceChecker;
         }
 
         public async Task<Result<UpdateWorkspaceAvailabilityResponseDTO>> Execute((string slug, UpdateWorkspaceAvailabilityRequestDTO availability) input)
@@ -63,6 +68,22 @@ namespace CoworkingBooking.Application.Workspace.UseCases
                 {
                     return Result<UpdateWorkspaceAvailabilityResponseDTO>
                         .Failure(new List<Error> { new Error("Workspace not found.", ErrorType.NotFound) });
+                }
+
+                var workspaceCalendarExistence = await workspaceCalendarExistenceChecker
+                    .Execute(workspaceFound.Id, workspaceAvailability.StartAt, workspaceAvailability.Recurrence.Until);
+
+                if (workspaceCalendarExistence.Count > 0)
+                {
+                    var startAt = workspaceAvailability.StartAt.ToString("yyyy-MM-ddTHH:mm:ss.fffK", CultureInfo.InvariantCulture);
+                    var until = workspaceAvailability.Recurrence.Until.ToString("yyyy-MM-ddTHH:mm:ss.fffK", CultureInfo.InvariantCulture);
+
+                    logger.LogInformation("Workspace Availability already exists on Calendar to {StartAt} - {Until}", startAt, until);
+
+                    return Result<UpdateWorkspaceAvailabilityResponseDTO>
+                        .Failure(new List<Error> { 
+                            new Error($"Workspace Availability already exists on Calendar to {startAt} - {until}", ErrorType.ValidationError)
+                        });
                 }
 
                 // // Update the availability of the workspace

@@ -43,7 +43,7 @@ namespace CoworkingBooking.Infraestructure.Mappers
             var coordinates = ConvertGeoJsonObjectModelToGeoJson.ParseToGeoJson(model.Coordinates);
 
             return WorkspaceEntity.Rehydrate(
-                id: model.Id.ToString(),
+                id: model.Id,
                 name: model.Name,
                 description: model.Description,
                 slug: model.Slug,
