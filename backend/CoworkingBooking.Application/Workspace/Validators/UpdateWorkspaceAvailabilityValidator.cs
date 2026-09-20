@@ -24,17 +24,17 @@ namespace CoworkingBooking.Application.Workspace.Validators
             RuleFor(availability => availability.Timezone)
                 .NotEmpty();
 
+            RuleFor(availability => availability.Until)
+                    .NotEmpty()
+                    .Must(BeAValidIsoString);
+
             When(availability => availability.Frequency == Frequency.DAILY, () =>
             {
                 RuleFor(availability => availability.ByDay)
                     .Null();
                 
                 RuleFor(availability => availability.ByMonth)
-                    .Null();
-
-                RuleFor(availability => availability.Until)
-                    .NotEmpty()
-                    .Must(BeAValidIsoString);
+                    .Null(); 
             });
 
             When(availability => availability.Frequency == Frequency.WEEKLY, () =>
@@ -53,10 +53,6 @@ namespace CoworkingBooking.Application.Workspace.Validators
                     RuleForEach(availability => availability.ByMonth)
                         .NotEmpty()
                         .InclusiveBetween(1, 12);
-
-                    RuleFor(availability => availability.Until)
-                        .NotEmpty()
-                        .Must(BeAValidIsoString);
                 });
             });
         }

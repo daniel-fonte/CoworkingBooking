@@ -129,14 +129,19 @@ namespace CoworkingBooking.Core.Workspace.Entities
 
             if (this.Frequency == Frequency.WEEKLY)
             {
-                if (this.ByDay == null)
+                if (ByDay == null && ByMonth == null)
+                {
+                    throw new ArgumentException("ByDay or ByMonth must be set when Frequency is Weekly");
+                }
+
+                if (ByDay == null)
                 {
                     throw new ArgumentException("ByDay must be set when Frequency is Weekly");
                 }
 
-                if (this.ByMonth == null)
+                if (ByMonth != null && ByDay == null)
                 {
-                    throw new ArgumentException("ByMonth must be set when Frequency is Weekly");
+                    throw new ArgumentException("ByDay must be set when Frequency is Weekly and ByMonth is set");
                 }
             }
         }

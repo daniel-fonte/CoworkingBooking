@@ -115,10 +115,10 @@ namespace CoworkingBooking.Core.Workspace.Entities
 
             if (status == WorkspaceStatus.Available)
             {
-                // if (this._dayOfWeekAvailables.Count <= 0)
-                // {
-                //     throw new InvalidOperationException($"Workspace cannot update status to {status.ToString()} because Availability not set.");
-                // }
+                if (this._availability == null)
+                {
+                    throw new InvalidOperationException($"Workspace cannot update status to {status.ToString()} because Availability is not set.");
+                }
             }
             else if (status == WorkspaceStatus.Maintenance)
             {

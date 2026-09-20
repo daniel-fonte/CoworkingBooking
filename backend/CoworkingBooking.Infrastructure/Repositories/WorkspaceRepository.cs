@@ -1,5 +1,7 @@
+using System.Linq.Expressions;
 using CoworkingBooking.Core.Workspace.Constraints;
 using CoworkingBooking.Core.Workspace.Entities;
+using CoworkingBooking.Core.Workspace.Enums;
 using CoworkingBooking.Core.Workspace.Repositories;
 using CoworkingBooking.Infraestructure.Mappers;
 using CoworkingBooking.Infraestructure.Models;
@@ -43,10 +45,10 @@ namespace CoworkingBooking.Infraestructure.Repositories
 
         public async Task<WorkspaceEntity?> FindOneBySlug(string slug)
         {
-            var filter = Builders<WorkspaceModel>.Filter.Eq(w => w.Slug, slug);
-            var inactiveFilter = Builders<WorkspaceModel>.Filter.Eq(w => w.IsInactive, false);
+            var filter = Builders<WorkspaceModel>.Filter.Eq(w => w.Slug, slug) &
+                Builders<WorkspaceModel>.Filter.Eq(w => w.IsInactive, false);
             
-            var workspaceModel = await _collection.Find(filter & inactiveFilter).FirstOrDefaultAsync();
+            var workspaceModel = await _collection.Find(filter).FirstOrDefaultAsync();
 
             if (workspaceModel == null)
             {
@@ -88,8 +90,10 @@ namespace CoworkingBooking.Infraestructure.Repositories
 
             var modelAvailability = workspaceAvailabilityPersistenceMapper.ToModel(availability);
 
-            var filter = Builders<WorkspaceModel>.Filter.Eq(w => w.Id, workspaceId);
-            var inactiveFilter = Builders<WorkspaceModel>.Filter.Eq(w => w.IsInactive, false);
+            var filter = 
+                Builders<WorkspaceModel>.Filter.Eq(w => w.Id, workspaceId) &
+                Builders<WorkspaceModel>.Filter.Eq(w => w.IsInactive, false);
+
             var update = Builders<WorkspaceModel>.Update.Set(w => w.Availability, modelAvailability);
 
             var options = new FindOneAndUpdateOptions<WorkspaceModel>
@@ -98,7 +102,7 @@ namespace CoworkingBooking.Infraestructure.Repositories
                 IsUpsert = false,
             };
 
-            var result = await _collection.FindOneAndUpdateAsync(filter & inactiveFilter, update, options);
+            var result = await _collection.FindOneAndUpdateAsync(filter, update, options);
 
             if (result == null)
             {
@@ -117,6 +121,25 @@ namespace CoworkingBooking.Infraestructure.Repositories
 
             var filter = Builders<WorkspaceModel>.Filter.Eq(w => w.Id, workspaceId);
             var update = Builders<WorkspaceModel>.Update.Set(w => w, workspaceModel);
+
+            var options = new FindOneAndUpdateOptions<WorkspaceModel>
+            {
+                ReturnDocument = ReturnDocument.After,
+                IsUpsert = false,
+            };
+
+            var result = await _collection.FindOneAndUpdateAsync(filter, update, options);
+
+            var workspaceAvailabilityRecurrenceEntity = workSpaceAvailabilityRecurrencePersistenceMapper.ToEntity(result.Availability!.Recurrence);
+            var workspaceAvailabilityEntity = workspaceAvailabilityPersistenceMapper.ToEntity(result.Availability);
+
+            return workspacePersistenceMapper.ToEntity(result);
+        }
+
+        public async Task<WorkspaceEntity> UpdateStatusById(string id, WorkspaceStatus status)
+        {
+            var filter = Builders<WorkspaceModel>.Filter.Eq(w => w.Id, id);
+            var update = Builders<WorkspaceModel>.Update.Set(w => w.Status, status);
 
             var options = new FindOneAndUpdateOptions<WorkspaceModel>
             {

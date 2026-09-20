@@ -3,6 +3,7 @@ using CoworkingBooking.Application.Interfaces;
 using CoworkingBooking.Application.Workspace.Dtos;
 using CoworkingBooking.Application.Workspace.Mappers;
 using CoworkingBooking.Application.Workspace.Ports;
+using CoworkingBooking.Core.Workspace.Enums;
 using CoworkingBooking.Core.Workspace.Events;
 using CoworkingBooking.Core.Workspace.Repositories;
 using CoworkingBooking.Shared.Classes;
@@ -88,6 +89,8 @@ namespace CoworkingBooking.Application.Workspace.UseCases
 
                 // // Update the availability of the workspace
                 workspaceFound.UpdateAvailability(workspaceAvailability);
+
+                workspaceFound.UpdateStatus(WorkspaceStatus.Available);
                 
                 var updateResult = await workspaceRepository.UpdateAvailability(workspaceFound.Id, workspaceFound.Availability!);
 
@@ -96,6 +99,8 @@ namespace CoworkingBooking.Application.Workspace.UseCases
                     return Result<UpdateWorkspaceAvailabilityResponseDTO>
                         .Failure(new List<Error> { new Error("Failed to update workspace availability.", ErrorType.InternalServerError) });
                 }
+
+                await workspaceRepository.UpdateStatusById(workspaceFound.Id, workspaceFound.Status);
 
                 var response = this.workspaceAvailabilityMapper.ToWorkspaceAvailabilityResponseDTO(updateResult.Availability!);
 
@@ -112,11 +117,13 @@ namespace CoworkingBooking.Application.Workspace.UseCases
                 if (ex is ArgumentOutOfRangeException || ex is ArgumentNullException || ex is InvalidOperationException || ex is ArgumentException) 
                 {
                     logger.LogWarning(ex, ex.Message);
-                    return Result<UpdateWorkspaceAvailabilityResponseDTO>.Failure(new List<Error> { new Error(ex.Message, ErrorType.ValidationError) });
+                    return Result<UpdateWorkspaceAvailabilityResponseDTO>
+                        .Failure(new List<Error> { new Error(ex.Message, ErrorType.ValidationError) });
                 }
 
                 logger.LogError(ex, "Occured unexpected error.");
-                return Result<UpdateWorkspaceAvailabilityResponseDTO>.Failure(new List<Error> { new Error("An unexpected error occurred.", ErrorType.InternalServerError) });
+                return Result<UpdateWorkspaceAvailabilityResponseDTO>
+                    .Failure(new List<Error> { new Error("An unexpected error occurred.", ErrorType.InternalServerError) });
             }
         }
     }
