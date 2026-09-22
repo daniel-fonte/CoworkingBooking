@@ -30,6 +30,7 @@ namespace CoworkingBooking.Infraestructure.Models
         public bool IsFull { get; set; } = false;
 
         [BsonElement("bookings")]
+        [BsonIgnoreIfNull]
         public List<WorkspaceCalendarBookingModel>? Bookings { get; set; }
 
         [BsonElement("createdAt")]

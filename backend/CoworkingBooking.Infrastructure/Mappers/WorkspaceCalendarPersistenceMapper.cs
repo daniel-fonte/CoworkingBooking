@@ -5,6 +5,13 @@ namespace CoworkingBooking.Infraestructure.Mappers
 {
     public class WorkspaceCalendarPersistenceMapper
     {
+        private readonly WorkspaceCalendarBookingPersistenceMapper workspaceCalendarBookingPersistenceMapper;
+
+        public WorkspaceCalendarPersistenceMapper(WorkspaceCalendarBookingPersistenceMapper workspaceCalendarBookingPersistenceMapper)
+        {
+            this.workspaceCalendarBookingPersistenceMapper = workspaceCalendarBookingPersistenceMapper;
+        }
+
         public WorkspaceCalendarModel ToModel(WorkspaceCalendarEntity entity)
         {
             return new WorkspaceCalendarModel
@@ -27,6 +34,7 @@ namespace CoworkingBooking.Infraestructure.Mappers
                 startAt: model.StartAt,
                 endAt: model.EndAt,
                 isFull: model.IsFull,
+                bookings: model.Bookings?.Select(workspaceCalendarBookingPersistenceMapper.ToEntity).ToList() ?? [],
                 createdAt: model.CreatedAt,
                 updatedAt: model.UpdatedAt
             );

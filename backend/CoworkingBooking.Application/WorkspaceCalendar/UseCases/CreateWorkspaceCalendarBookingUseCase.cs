@@ -73,7 +73,7 @@ namespace CoworkingBooking.Application.WorkspaceCalendar.UseCases
                     .Failure(new List<Error> { new Error($"Workspace Availability {workspaceCalendarFound.WorkspaceId} not exists", ErrorType.NotFound)});
             }
 
-            workspaceCalendarFound.AddBooking(workspaceCalendarBooking, workspaceExists.Availability.Timezone);
+            workspaceCalendarFound.AddBooking(workspaceCalendarBooking);
 
             var workspaceCalendarBookingInserted = await workspaceCalendarRepository
                 .UpdateBooking(workspaceCalendarFound.Id, workspaceCalendarFound.Bookings.ToList());

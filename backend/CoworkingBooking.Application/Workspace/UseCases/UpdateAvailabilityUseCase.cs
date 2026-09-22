@@ -1,4 +1,3 @@
-using System.Globalization;
 using CoworkingBooking.Application.Interfaces;
 using CoworkingBooking.Application.Workspace.Dtos;
 using CoworkingBooking.Application.Workspace.Mappers;
@@ -74,40 +73,26 @@ namespace CoworkingBooking.Application.Workspace.UseCases
                 var workspaceCalendarExistence = await workspaceCalendarExistenceChecker
                     .Execute(workspaceFound.Id, workspaceAvailability.StartAt, workspaceAvailability.Recurrence.Until);
 
-                if (workspaceCalendarExistence.Count > 0)
-                {
-                    var startAt = workspaceAvailability.StartAt.ToString("yyyy-MM-ddTHH:mm:ss.fffK", CultureInfo.InvariantCulture);
-                    var until = workspaceAvailability.Recurrence.Until.ToString("yyyy-MM-ddTHH:mm:ss.fffK", CultureInfo.InvariantCulture);
+                workspaceFound.UpdateAvailability(workspaceAvailability, workspaceCalendarExistence);
 
-                    logger.LogInformation("Workspace Availability already exists on Calendar to {StartAt} - {Until}", startAt, until);
+                var updatedAvailabilityResult = await workspaceRepository.UpdateAvailability(workspaceFound.Id, workspaceFound.Availability!);
 
-                    return Result<UpdateWorkspaceAvailabilityResponseDTO>
-                        .Failure(new List<Error> { 
-                            new Error($"Workspace Availability already exists on Calendar to {startAt} - {until}", ErrorType.ValidationError)
-                        });
-                }
-
-                // // Update the availability of the workspace
-                workspaceFound.UpdateAvailability(workspaceAvailability);
-
-                workspaceFound.UpdateStatus(WorkspaceStatus.Available);
-                
-                var updateResult = await workspaceRepository.UpdateAvailability(workspaceFound.Id, workspaceFound.Availability!);
-
-                if (updateResult == null)
+                if (updatedAvailabilityResult == null)
                 {
                     return Result<UpdateWorkspaceAvailabilityResponseDTO>
                         .Failure(new List<Error> { new Error("Failed to update workspace availability.", ErrorType.InternalServerError) });
                 }
 
-                await workspaceRepository.UpdateStatusById(workspaceFound.Id, workspaceFound.Status);
+                workspaceFound.UpdateStatus(WorkspaceStatus.Available);
 
-                var response = this.workspaceAvailabilityMapper.ToWorkspaceAvailabilityResponseDTO(updateResult.Availability!);
+                var updatedWorkspaceStatus = await workspaceRepository.UpdateStatusById(workspaceFound.Id, workspaceFound.Status);
+
+                var response = this.workspaceAvailabilityMapper.ToWorkspaceAvailabilityResponseDTO(updatedWorkspaceStatus.Availability!);
 
                 logger.LogInformation("Workspace {Slug} availability updated sucessfully", slug);
 
                 await this.updatedWorkspaceAvailabilityPublish.EnqueueMessage<UpdatedWorkspaceAvailabilityEvent>(
-                    new UpdatedWorkspaceAvailabilityEvent(workspaceFound.Id, updateResult.Availability!)
+                    new UpdatedWorkspaceAvailabilityEvent(workspaceFound.Id, updatedWorkspaceStatus.Availability!)
                 );
 
                 return Result<UpdateWorkspaceAvailabilityResponseDTO>.Success(response);

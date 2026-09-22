@@ -1,4 +1,5 @@
 using CoworkingBooking.Core.Workspace.Enums;
+using CoworkingBooking.Core.WorkspaceCalendar.Entities;
 using CoworkingBooking.Shared.Classes;
 
 namespace CoworkingBooking.Core.Workspace.Entities
@@ -79,8 +80,8 @@ namespace CoworkingBooking.Core.Workspace.Entities
         public void Publish(string generatedSlug)
         {
             this.Slug = NormalizeRequired(generatedSlug, nameof(generatedSlug));
-            this.Status = WorkspaceStatus.Draft; // Set status to Draft when publishing
             this.IsInactive = false;
+            this.UpdatedAt = DateTime.UtcNow;
         }
 
         public void Activate()
@@ -110,8 +111,7 @@ namespace CoworkingBooking.Core.Workspace.Entities
 
         public void UpdateStatus(WorkspaceStatus status)
         {
-
-            ArgumentNullException.ThrowIfNull(status.ToString(), nameof(status));
+            ValidateWorkspaceStatus(status);
 
             if (status == WorkspaceStatus.Available)
             {
@@ -133,19 +133,25 @@ namespace CoworkingBooking.Core.Workspace.Entities
             // }
 
             this.Status = status;
+            this.UpdatedAt = DateTime.UtcNow;
         }
 
-        public void UpdateAvailability(WorkSpaceAvailability availability)
+        public void UpdateAvailability(WorkSpaceAvailability availability, List<WorkspaceCalendarEntity> workspaceCalendars)
         {
             ArgumentNullException.ThrowIfNull(availability, nameof(availability));
+            ArgumentNullException.ThrowIfNull(workspaceCalendars, nameof(workspaceCalendars));
 
-            // if (this.HasBooking())
-            // {
-            //     throw new InvalidOperationException($"Cannot update availability because there are existing unavailable slots.");   
-            // }
+            workspaceCalendars.ForEach(wc =>
+            {
+                if (wc.HasBooking())
+                {
+                    throw new InvalidOperationException($"Cannot update Workspace {Slug} Availability because there are Booking to Workspace Calendar {wc.Id}.");
+                }
+            });
 
             this._availability = availability;
             this.Availability = availability;
+            this.UpdatedAt = DateTime.UtcNow;
         }
 
         public void RemoveResource(string resource)
@@ -157,6 +163,7 @@ namespace CoworkingBooking.Core.Workspace.Entities
             {
                 _resources.Remove(trimmedResource);
                 Resources = _resources.AsReadOnly();
+                UpdatedAt = DateTime.UtcNow;
             }
         }
 
@@ -169,6 +176,7 @@ namespace CoworkingBooking.Core.Workspace.Entities
             {
                 _resources.Add(trimmedResource);
                 Resources = _resources.AsReadOnly();
+                UpdatedAt = DateTime.UtcNow;
             }
         }
 

@@ -35,6 +35,7 @@ builder.Services.AddSingleton<MongodbDatabaseService>();
 builder.Services.AddSingleton<WorkspaceAvailabilityMapper>();
 builder.Services.AddSingleton<WorkspaceCalendarPersistenceMapper>();
 builder.Services.AddSingleton<WorkspaceCalendarMapper>();
+builder.Services.AddSingleton<WorkspaceCalendarBookingPersistenceMapper>();
 
 builder.Services.AddSingleton<IWorkspaceCalendarRepository, WorkspaceCalendarRepository>();
 builder.Services.AddScoped<ITransactionManager, MongodbTransactionManagerService>();

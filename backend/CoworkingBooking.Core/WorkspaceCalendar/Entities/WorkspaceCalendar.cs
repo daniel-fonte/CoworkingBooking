@@ -32,6 +32,7 @@ namespace CoworkingBooking.Core.WorkspaceCalendar.Entities
             string workspaceId,
             DateTime startAt,
             DateTime endAt,
+            List<WorkspaceCalendarBooking> bookings,
             bool isFull,
             DateTime createdAt,
             DateTime updatedAt
@@ -45,33 +46,51 @@ namespace CoworkingBooking.Core.WorkspaceCalendar.Entities
                 UpdatedAt = updatedAt
             };
 
+            entity._bookings = NormalizeBookings(bookings);
+            entity.Bookings = entity._bookings.AsReadOnly();
+
             return entity;
         }
 
-        public void AddBooking(WorkspaceCalendarBooking workspaceCalendarBooking, string workspaceTimezone)
+        public void AddBooking(WorkspaceCalendarBooking workspaceCalendarBooking)
         {
+            ArgumentNullException.ThrowIfNull(workspaceCalendarBooking, nameof(workspaceCalendarBooking));
+
             if (IsFull)
             {
                 throw new InvalidOperationException("Workspace Calendar is full");
             }
 
-            var timeZone = TimeZoneInfo.FindSystemTimeZoneById(workspaceTimezone);
-
-            var startAtTimezone = TimeZoneInfo.ConvertTimeFromUtc(workspaceCalendarBooking.StartAt, timeZone);
-            var currentEndAtTimezone = TimeZoneInfo.ConvertTimeFromUtc(workspaceCalendarBooking.EndAt, timeZone);
-
-            _bookings.ForEach(b =>
+            if (workspaceCalendarBooking.StartAt < StartAt || workspaceCalendarBooking.EndAt > EndAt)
             {
-                TimeSpan startAtDifference = TimeZoneInfo.ConvertTimeFromUtc(b.StartAt, timeZone) - startAtTimezone;
+                throw new ArgumentOutOfRangeException(
+                    nameof(workspaceCalendarBooking),
+                    $"Booking {workspaceCalendarBooking.StartAt:O} - {workspaceCalendarBooking.EndAt:O} is outside Workspace Calendar window {StartAt:O} - {EndAt:O}."
+                );
+            }
 
-                if (startAtDifference.Hours <= 0)
-                {
-                    Console.WriteLine("StartAt já está dentro de uma reserva");
-                }
-            });
+            var overlapping = _bookings.Find(b => Overlaps(b, workspaceCalendarBooking));
+
+            if (overlapping is not null)
+            {
+                throw new InvalidOperationException(
+                    $"Booking {workspaceCalendarBooking.StartAt:O} - {workspaceCalendarBooking.EndAt:O} overlaps existing booking {overlapping.StartAt:O} - {overlapping.EndAt:O}."
+                );
+            }
 
             _bookings.Add(workspaceCalendarBooking);
-            Bookings = _bookings;
+            Bookings = _bookings.AsReadOnly();
+            UpdatedAt = DateTime.UtcNow;
+        }
+
+        public bool HasBooking()
+        {
+            return _bookings.Count > 0;
+        }
+
+        private static bool Overlaps(WorkspaceCalendarBooking existsBooking, WorkspaceCalendarBooking newBooking)
+        {
+            return existsBooking.StartAt < newBooking.EndAt && newBooking.StartAt < existsBooking.EndAt;
         }
 
         private static string NormalizeRequired(string value, string propertyName)
@@ -84,6 +103,13 @@ namespace CoworkingBooking.Core.WorkspaceCalendar.Entities
         private static DateTime NormalizeDate(DateTime value)
         {
             return value.ToUniversalTime();
+        }
+
+        private static List<WorkspaceCalendarBooking> NormalizeBookings(List<WorkspaceCalendarBooking> value)
+        {
+            ArgumentNullException.ThrowIfNull(value);
+
+            return new List<WorkspaceCalendarBooking>(value);
         }
     }
 
@@ -101,6 +127,11 @@ namespace CoworkingBooking.Core.WorkspaceCalendar.Entities
             EndAt = NormalizeDate(endAt);
             CreatedAt = DateTime.UtcNow.ToUniversalTime();
             UpdatedAt = DateTime.UtcNow.ToUniversalTime();
+
+            if (StartAt >= EndAt)
+            {
+                throw new ArgumentException("StartAt must be less than EndAt.", nameof(startAt));
+            }
         }
 
         public static WorkspaceCalendarBooking Rehydrate(
@@ -128,9 +159,10 @@ namespace CoworkingBooking.Core.WorkspaceCalendar.Entities
 
         public void CalculateTotalPrice(double pricePerHour)
         {
-            TimeSpan totalHours = EndAt - StartAt;
+            TimeSpan duration = EndAt - StartAt;
 
-            TotalPrice = totalHours.Hours * pricePerHour;
+            TotalPrice = duration.TotalHours * pricePerHour;
+            UpdatedAt = DateTime.UtcNow;
         }
     }
 }
