@@ -1,7 +1,7 @@
 using CoworkingBooking.Application.Workspace.Dtos;
 using CoworkingBooking.Shared.Enums;
+using CoworkingBooking.Shared.Utils;
 using FluentValidation;
-using System.Globalization;
 
 namespace CoworkingBooking.Application.Workspace.Validators
 {
@@ -11,11 +11,11 @@ namespace CoworkingBooking.Application.Workspace.Validators
         {
             RuleFor(availability => availability.StartAt)
                 .NotEmpty()
-                .Must(BeAValidIsoString);
+                .Must(DatesUtils.BeAValidIsoString);
 
             RuleFor(availability => availability.EndAt)
                 .NotEmpty()
-                .Must(BeAValidIsoString);
+                .Must(DatesUtils.BeAValidIsoString);
 
             RuleFor(availability => availability.Frequency)
                 .NotEmpty()
@@ -26,7 +26,7 @@ namespace CoworkingBooking.Application.Workspace.Validators
 
             RuleFor(availability => availability.Until)
                     .NotEmpty()
-                    .Must(BeAValidIsoString);
+                    .Must(DatesUtils.BeAValidIsoString);
 
             When(availability => availability.Frequency == Frequency.DAILY, () =>
             {
@@ -55,16 +55,6 @@ namespace CoworkingBooking.Application.Workspace.Validators
                         .InclusiveBetween(1, 12);
                 });
             });
-        }
-
-        private bool BeAValidIsoString(string? dateString)
-        {
-            return DateTime.TryParse(
-                dateString,
-                CultureInfo.InvariantCulture,
-                DateTimeStyles.AdjustToUniversal | DateTimeStyles.AssumeUniversal,
-                out _
-            );
         }
     }
 }

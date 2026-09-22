@@ -12,9 +12,9 @@ namespace CoworkingBooking.Workers.Mappers
             this.mapper = mapper;
         }
 
-        public CreateWorkspaceRecurrenceRequestDTO ToCreateWorkspaceRecurrenceRequestDTO(UpdatedWorkspaceAvailabilityEvent @event)
+        public CreateWorkspaceCalendarRecurrenceRequestDTO ToCreateWorkspaceRecurrenceRequestDTO(UpdatedWorkspaceAvailabilityEvent @event)
         {
-            return new CreateWorkspaceRecurrenceRequestDTO(
+            return new CreateWorkspaceCalendarRecurrenceRequestDTO(
                 WorkspaceId: @event.WorkspaceId,
                 WorkSpaceAvailability: mapper.ToEntity(@event.WorkSpaceAvailability)
             );

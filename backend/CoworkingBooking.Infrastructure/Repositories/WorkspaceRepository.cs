@@ -1,4 +1,3 @@
-using System.Linq.Expressions;
 using CoworkingBooking.Core.Workspace.Constraints;
 using CoworkingBooking.Core.Workspace.Entities;
 using CoworkingBooking.Core.Workspace.Enums;
@@ -7,7 +6,6 @@ using CoworkingBooking.Infraestructure.Mappers;
 using CoworkingBooking.Infraestructure.Models;
 using CoworkingBooking.Infraestructure.Providers;
 using CoworkingBooking.Shared.Exceptions;
-using Microsoft.Extensions.Logging;
 using MongoDB.Driver;
 
 namespace CoworkingBooking.Infraestructure.Repositories
@@ -38,9 +36,18 @@ namespace CoworkingBooking.Infraestructure.Repositories
             throw new NotImplementedException();
         }
 
-        public Task<WorkspaceEntity?> FindOneById(string id)
+        public async Task<WorkspaceEntity?> FindOneById(string id)
         {
-            throw new NotImplementedException();
+            var filter = Builders<WorkspaceModel>.Filter.Eq(w => w.Id, id);
+
+            var workspaceModel = await _collection.Find(filter).FirstOrDefaultAsync();
+
+            if (workspaceModel == null)
+            {
+                return null;
+            }
+
+            return workspacePersistenceMapper.ToEntity(workspaceModel);
         }
 
         public async Task<WorkspaceEntity?> FindOneBySlug(string slug)
@@ -57,6 +64,18 @@ namespace CoworkingBooking.Infraestructure.Repositories
 
             var workspaceEntity = workspacePersistenceMapper.ToEntity(workspaceModel);
             return workspaceEntity;
+        }
+
+        public async Task<string?> FindTimezoneById(string id)
+        {
+            var filter = Builders<WorkspaceModel>.Filter.Eq(w => w.Id, id);
+
+            var workspaceModel = await _collection
+                .Find(filter)
+                .Project(w => w.Availability!.Timezone)
+                .FirstOrDefaultAsync();
+
+            return workspaceModel;
         }
 
         public async Task<WorkspaceEntity> InsertOne(WorkspaceEntity workspace)

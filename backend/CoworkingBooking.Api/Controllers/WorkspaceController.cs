@@ -34,8 +34,9 @@ namespace CoworkingBooking.Api.Controllers
         [ProducesResponseType(StatusCodes.Status409Conflict)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<ApiResponse<CreateWorkspaceResponseDTO>>> CreateWorkspace([FromBody] CreateWorkspaceRequestDTO request)
-        {
+        public async Task<ActionResult<ApiResponse<CreateWorkspaceResponseDTO>>> CreateWorkspace(
+            [FromBody] CreateWorkspaceRequestDTO request
+        ) {
             var result = await createWorkspaceUseCase.Execute(request);
 
             return ResultsExtension.ToActionResult(result, data => CreatedAtAction(nameof(GetBySlug), new { slug = data.Data!.Slug }, data));
@@ -45,8 +46,9 @@ namespace CoworkingBooking.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<ApiResponse<DetailsWorkspaceResponseDTO>>> GetBySlug([FromRoute] string slug)
-        {
+        public async Task<ActionResult<ApiResponse<DetailsWorkspaceResponseDTO>>> GetBySlug(
+            [FromRoute] string slug
+        ) {
             var result = await getWorkspaceBySlugUseCase.Execute(slug);
 
             return ResultsExtension.ToActionResult(result, data => Ok(data));

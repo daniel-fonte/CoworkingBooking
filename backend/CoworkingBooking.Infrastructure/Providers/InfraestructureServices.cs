@@ -25,6 +25,7 @@ namespace CoworkingBooking.Infraestructure.Providers
             services.AddSingleton<WorkspaceAvailabilityPersistenceMapper>();
             services.AddSingleton<WorkspacePersistenceMapper>();
             services.AddSingleton<WorkspaceCalendarPersistenceMapper>();
+            services.AddSingleton<WorkspaceCalendarBookingPersistenceMapper>();
 
             services.AddSingleton<IWorkspaceRepository, WorkspaceRepository>();
             services.AddSingleton<IWorkspaceCalendarRepository, WorkspaceCalendarRepository>();

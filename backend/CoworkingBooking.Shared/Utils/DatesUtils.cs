@@ -1,4 +1,6 @@
-namespace CoworkingBooking.Workers.Utils
+using System.Globalization;
+
+namespace CoworkingBooking.Shared.Utils
 {
     public class DatesUtils
     {
@@ -31,6 +33,21 @@ namespace CoworkingBooking.Workers.Utils
                 return date.AddDays(-daysBackward);
 
             return date.AddDays(daysForward);
+        }
+
+        public static bool BeAValidIsoString(string? dateString)
+        {
+            return DateTime.TryParse(
+                dateString,
+                CultureInfo.InvariantCulture,
+                DateTimeStyles.AdjustToUniversal | DateTimeStyles.AssumeUniversal,
+                out _
+            );
+        }
+
+        public static string ToISOString(DateTime dateTime)
+        {
+            return dateTime.ToString("yyyy-MM-ddTHH:mm:ss.fffK", CultureInfo.InvariantCulture);
         }
     }
 }

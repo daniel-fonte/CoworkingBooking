@@ -16,17 +16,19 @@ namespace CoworkingBooking.Infraestructure
         private readonly MongodbDatabaseService _mongodbDatabaseService;
         private readonly IMongoCollection<WorkspaceCalendarModel> _collection;
         private readonly WorkspaceCalendarPersistenceMapper workspaceCalendarPersistenceMapper;
+        private readonly WorkspaceCalendarBookingPersistenceMapper workspaceCalendarBookingPersistenceMapper; 
 
         public WorkspaceCalendarRepository(
             MongodbDatabaseService mongodbDatabaseService,
-            WorkspaceCalendarPersistenceMapper workspaceCalendarPersistenceMapper
+            WorkspaceCalendarPersistenceMapper workspaceCalendarPersistenceMapper,
+            WorkspaceCalendarBookingPersistenceMapper workspaceCalendarBookingPersistenceMapper
         )
         {
             _mongodbDatabaseService = mongodbDatabaseService;
             _collection = _mongodbDatabaseService.GetCollection<WorkspaceCalendarModel>("workspaces_calendar");
             this.workspaceCalendarPersistenceMapper = workspaceCalendarPersistenceMapper;
+            this.workspaceCalendarBookingPersistenceMapper = workspaceCalendarBookingPersistenceMapper;
         }
-
         
         public Task<List<WorkspaceCalendarEntity>> FindByWorkspaceId(string workspaceId)
         {
@@ -107,6 +109,46 @@ namespace CoworkingBooking.Infraestructure
             var result = await _collection.Find(filter).ToListAsync();
 
             return result.Select(r => workspaceCalendarPersistenceMapper.ToEntity(r)).ToList();
+        }
+
+        public async Task<WorkspaceCalendarEntity?> FindOneById(string id)
+        {
+            var filter = Builders<WorkspaceCalendarModel>.Filter.Eq(wc => wc.Id, id);
+
+            var result = await _collection.Find(filter).FirstOrDefaultAsync();
+
+            if (result == null)
+            {
+                return null;
+            }
+
+            var workspaceCalendarEntity = workspaceCalendarPersistenceMapper.ToEntity(result);
+            return workspaceCalendarEntity;
+        }
+
+        public async Task<WorkspaceCalendarBooking?> UpdateBooking(string id, List<WorkspaceCalendarBooking> workspaceCalendarBooking)
+        {
+            var modelList = workspaceCalendarBooking.Select(wc => workspaceCalendarBookingPersistenceMapper.ToModel(wc));
+            var filter = Builders<WorkspaceCalendarModel>.Filter.Eq(wc => wc.Id, id);
+
+            var update = Builders<WorkspaceCalendarModel>.Update.Set(wc => wc.Bookings, modelList);
+
+            var options = new FindOneAndUpdateOptions<WorkspaceCalendarModel>
+            {
+                ReturnDocument = ReturnDocument.After,
+                IsUpsert = true,
+            };
+
+            var result = await _collection.FindOneAndUpdateAsync(filter, update, options);
+
+            if (result == null || result.Bookings == null)
+            {
+                return null;
+            }
+
+            return result.Bookings
+                .Select(b => workspaceCalendarBookingPersistenceMapper.ToEntity(b))
+                .FirstOrDefault();
         }
     }
 }

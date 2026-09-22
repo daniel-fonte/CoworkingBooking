@@ -1,7 +1,5 @@
-using System.Linq.Expressions;
 using CoworkingBooking.Core.Workspace.Entities;
 using CoworkingBooking.Core.Workspace.Enums;
-using CoworkingBooking.Core.WorkspaceCalendar.Entities;
 
 namespace CoworkingBooking.Core.Workspace.Repositories
 {
@@ -9,6 +7,7 @@ namespace CoworkingBooking.Core.Workspace.Repositories
     {
         Task<WorkspaceEntity?> FindOneById(string id);
         Task<WorkspaceEntity?> FindOneBySlug(string slug);
+        Task<string?> FindTimezoneById(string id);
         Task<List<WorkspaceEntity>> FindAll();
         Task<WorkspaceEntity> InsertOne(WorkspaceEntity workspace);
         Task<WorkspaceEntity?> UpdateAvailability(string workspaceId, WorkSpaceAvailability availability);

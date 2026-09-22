@@ -1,6 +1,6 @@
-using System.Globalization;
 using CoworkingBooking.Application.Workspace.Dtos;
 using CoworkingBooking.Core.Workspace.Entities;
+using CoworkingBooking.Shared.Utils;
 
 namespace CoworkingBooking.Application.Workspace.Mappers
 {
@@ -19,10 +19,10 @@ namespace CoworkingBooking.Application.Workspace.Mappers
         public UpdateWorkspaceAvailabilityResponseDTO ToWorkspaceAvailabilityResponseDTO(WorkSpaceAvailability workspaceAvailability)
         {
             return new UpdateWorkspaceAvailabilityResponseDTO(
-                StartAt: workspaceAvailability.StartAt.ToString("yyyy-MM-ddTHH:mm:ss.fffK", CultureInfo.InvariantCulture),
-                EndAt: workspaceAvailability.EndAt.ToString("yyyy-MM-ddTHH:mm:ss.fffK", CultureInfo.InvariantCulture),
+                StartAt: DatesUtils.ToISOString(workspaceAvailability.StartAt),
+                EndAt: DatesUtils.ToISOString(workspaceAvailability.EndAt),
                 Frequency: workspaceAvailability.Recurrence.Frequency,
-                Until: workspaceAvailability.Recurrence.Until.ToString("yyyy-MM-ddTHH:mm:ss.fffK", CultureInfo.InvariantCulture),
+                Until: DatesUtils.ToISOString(workspaceAvailability.Recurrence.Until),
                 ByDay: workspaceAvailability.Recurrence.ByDay,
                 ByMonth: workspaceAvailability.Recurrence.ByMonth,
                 Timezone: workspaceAvailability.Timezone

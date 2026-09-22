@@ -3,24 +3,24 @@ using CoworkingBooking.Application.WorkspaceCalendar.Dtos;
 using CoworkingBooking.Core.WorkspaceCalendar.Entities;
 using CoworkingBooking.Core.WorkspaceCalendar.Repositories;
 using CoworkingBooking.Shared.Classes;
-using CoworkingBooking.Workers.Utils;
 using CoworkingBooking.Shared.Enums;
 using CoworkingBooking.Shared.Interfaces;
 using CoworkingBooking.Shared.Exceptions;
 using Microsoft.Extensions.Logging;
+using CoworkingBooking.Shared.Utils;
 
 namespace CoworkingBooking.Application.WorkspaceCalendar.UseCases
 {
-    public class CreateWorkspaceRecurrencesUseCase : IUseCase<CreateWorkspaceRecurrenceRequestDTO, bool>
+    public class CreateWorkspaceCalendarRecurrencesUseCase : IUseCase<CreateWorkspaceCalendarRecurrenceRequestDTO, bool>
     {
         private readonly IWorkspaceCalendarRepository workspaceCalendarRepository;
         private readonly ITransactionManager transactionManager;
-        private ILogger<CreateWorkspaceRecurrencesUseCase> logger;
+        private ILogger<CreateWorkspaceCalendarRecurrencesUseCase> logger;
 
-        public CreateWorkspaceRecurrencesUseCase(
+        public CreateWorkspaceCalendarRecurrencesUseCase(
             IWorkspaceCalendarRepository workspaceCalendarRepository,
             ITransactionManager transactionManager,
-            ILogger<CreateWorkspaceRecurrencesUseCase> logger
+            ILogger<CreateWorkspaceCalendarRecurrencesUseCase> logger
         )
         {
             this.workspaceCalendarRepository = workspaceCalendarRepository;
@@ -28,7 +28,7 @@ namespace CoworkingBooking.Application.WorkspaceCalendar.UseCases
             this.logger = logger;
         }
 
-        public async Task<Result<bool>> Execute(CreateWorkspaceRecurrenceRequestDTO data)
+        public async Task<Result<bool>> Execute(CreateWorkspaceCalendarRecurrenceRequestDTO data)
         {
             List<WorkspaceCalendarEntity> workspaceCalendarList = new List<WorkspaceCalendarEntity>();
 

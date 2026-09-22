@@ -12,14 +12,14 @@ namespace CoworkingBooking.Workers.Consumers
         private readonly IAmazonSQS sqsClient;
         private readonly ILogger<UpdatedWorkspaceAvailabilityConsumer> logger;
         private readonly string UpdatedWorkspaceAvailabilityQueueName = "workspace-availability";
-        private readonly CreateWorkspaceRecurrencesUseCase createWorkspaceRecurrencesUseCase;
+        private readonly CreateWorkspaceCalendarRecurrencesUseCase createWorkspaceRecurrencesUseCase;
         private readonly WorkspaceCalendarMapper workspaceCalendarMapper;
         private string? queueUrl;
 
         public UpdatedWorkspaceAvailabilityConsumer(
             IAmazonSQS sqsClient,
             ILogger<UpdatedWorkspaceAvailabilityConsumer> logger,
-            CreateWorkspaceRecurrencesUseCase createWorkspaceRecurrencesUseCase,
+            CreateWorkspaceCalendarRecurrencesUseCase createWorkspaceRecurrencesUseCase,
             WorkspaceCalendarMapper workspaceCalendarMapper
         ) {
             this.sqsClient = sqsClient;
