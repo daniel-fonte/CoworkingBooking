@@ -29,6 +29,10 @@ namespace CoworkingBooking.Infraestructure.Models
         [BsonRepresentation(BsonType.Boolean)]
         public bool IsFull { get; set; } = false;
 
+        [BsonElement("isInactive")]
+        [BsonRepresentation(BsonType.Boolean)]
+        public bool IsInactive { get; set; } = false;
+
         [BsonElement("bookings")]
         [BsonIgnoreIfNull]
         public List<WorkspaceCalendarBookingModel>? Bookings { get; set; }

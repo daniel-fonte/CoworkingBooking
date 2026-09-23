@@ -104,7 +104,8 @@ namespace CoworkingBooking.Infraestructure
             var filter =
                 Builders<WorkspaceCalendarModel>.Filter.Eq(wc => wc.WorkspaceId, workspaceId) &
                 Builders<WorkspaceCalendarModel>.Filter.Gte(wc => wc.StartAt, startAt) &
-                Builders<WorkspaceCalendarModel>.Filter.Lte(wc => wc.StartAt, until);
+                Builders<WorkspaceCalendarModel>.Filter.Lte(wc => wc.StartAt, until) &
+                Builders<WorkspaceCalendarModel>.Filter.Eq(wc => wc.IsInactive, false);
 
             var result = await _collection.Find(filter).ToListAsync();
 
@@ -128,7 +129,7 @@ namespace CoworkingBooking.Infraestructure
 
         public async Task<WorkspaceCalendarBooking?> UpdateBooking(string id, List<WorkspaceCalendarBooking> workspaceCalendarBooking)
         {
-            var modelList = workspaceCalendarBooking.Select(wc => workspaceCalendarBookingPersistenceMapper.ToModel(wc));
+            var modelList = workspaceCalendarBooking.Select(workspaceCalendarBookingPersistenceMapper.ToModel);
             var filter = Builders<WorkspaceCalendarModel>.Filter.Eq(wc => wc.Id, id);
 
             var update = Builders<WorkspaceCalendarModel>.Update.Set(wc => wc.Bookings, modelList);
@@ -136,7 +137,7 @@ namespace CoworkingBooking.Infraestructure
             var options = new FindOneAndUpdateOptions<WorkspaceCalendarModel>
             {
                 ReturnDocument = ReturnDocument.After,
-                IsUpsert = true,
+                IsUpsert = false,
             };
 
             var result = await _collection.FindOneAndUpdateAsync(filter, update, options);
@@ -147,8 +148,35 @@ namespace CoworkingBooking.Infraestructure
             }
 
             return result.Bookings
-                .Select(b => workspaceCalendarBookingPersistenceMapper.ToEntity(b))
+                .Select(workspaceCalendarBookingPersistenceMapper.ToEntity)
                 .FirstOrDefault();
+        }
+
+        public async Task<long> SoftDeleteManyByAvailability(string workspaceId, DateTime startAt, DateTime until, IClientSessionHandle? session = null)
+        {
+            var filter = Builders<WorkspaceCalendarModel>.Filter.Eq(wc => wc.WorkspaceId, workspaceId) &
+                Builders<WorkspaceCalendarModel>.Filter.Gte(wc => wc.StartAt, startAt) &
+                Builders<WorkspaceCalendarModel>.Filter.Lte(wc => wc.EndAt, until) &
+                Builders<WorkspaceCalendarModel>.Filter.Eq(wc => wc.IsInactive, false);
+
+            var update = Builders<WorkspaceCalendarModel>.Update.Set(wc => wc.IsInactive, true);
+
+            var options = new UpdateOptions()
+            {
+                IsUpsert = false
+            };
+
+            UpdateResult result;
+
+            if (session is not null)
+            {
+                result = await _collection.UpdateManyAsync(session, filter, update, options);
+            } else
+            {
+                result = await _collection.UpdateManyAsync(filter, update, options);
+            }
+
+            return result.ModifiedCount;
         }
     }
 }

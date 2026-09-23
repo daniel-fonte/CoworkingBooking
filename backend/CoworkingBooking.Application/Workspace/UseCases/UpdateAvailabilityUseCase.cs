@@ -7,6 +7,7 @@ using CoworkingBooking.Core.Workspace.Events;
 using CoworkingBooking.Core.Workspace.Repositories;
 using CoworkingBooking.Shared.Classes;
 using CoworkingBooking.Shared.Interfaces;
+using CoworkingBooking.Shared.Utils;
 using FluentValidation;
 using Microsoft.Extensions.Logging;
 
@@ -73,6 +74,17 @@ namespace CoworkingBooking.Application.Workspace.UseCases
                 var workspaceCalendarExistence = await workspaceCalendarExistenceChecker
                     .Execute(workspaceFound.Id, workspaceAvailability.StartAt, workspaceAvailability.Recurrence.Until);
 
+                if (
+                    workspaceCalendarExistence.Count > 0 &&  
+                    (workspaceCalendarExistence.First().StartAt == DateTime.Parse(availability.StartAt)) &&
+                    (workspaceCalendarExistence.Last().EndAt == DateTime.Parse(availability.Until))
+                )
+                {
+                    logger.LogWarning("Already exists Workspace Availability to {StartAt} - {Until}", availability.StartAt, availability.Until);
+                    return Result<UpdateWorkspaceAvailabilityResponseDTO>
+                        .Failure([new Error($"Already exists Workspace Availability to {availability.StartAt} - {availability.Until}", ErrorType.ValidationError)]);
+                }
+
                 workspaceFound.UpdateAvailability(workspaceAvailability, workspaceCalendarExistence);
 
                 var updatedAvailabilityResult = await workspaceRepository.UpdateAvailability(workspaceFound.Id, workspaceFound.Availability!);
@@ -80,7 +92,7 @@ namespace CoworkingBooking.Application.Workspace.UseCases
                 if (updatedAvailabilityResult == null)
                 {
                     return Result<UpdateWorkspaceAvailabilityResponseDTO>
-                        .Failure(new List<Error> { new Error("Failed to update workspace availability.", ErrorType.InternalServerError) });
+                        .Failure([new Error("Failed to update workspace availability.", ErrorType.InternalServerError)]);
                 }
 
                 workspaceFound.UpdateStatus(WorkspaceStatus.Available);

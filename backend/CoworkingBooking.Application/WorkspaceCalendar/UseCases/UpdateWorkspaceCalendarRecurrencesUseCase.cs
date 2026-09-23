@@ -11,16 +11,16 @@ using CoworkingBooking.Shared.Utils;
 
 namespace CoworkingBooking.Application.WorkspaceCalendar.UseCases
 {
-    public class CreateWorkspaceCalendarRecurrencesUseCase : IUseCase<CreateWorkspaceCalendarRecurrenceRequestDTO, bool>
+    public class UpdateWorkspaceCalendarRecurrencesUseCase : IUseCase<UpdateWorkspaceCalendarRecurrenceRequestDTO, bool>
     {
         private readonly IWorkspaceCalendarRepository workspaceCalendarRepository;
         private readonly ITransactionManager transactionManager;
-        private ILogger<CreateWorkspaceCalendarRecurrencesUseCase> logger;
+        private ILogger<UpdateWorkspaceCalendarRecurrencesUseCase> logger;
 
-        public CreateWorkspaceCalendarRecurrencesUseCase(
+        public UpdateWorkspaceCalendarRecurrencesUseCase(
             IWorkspaceCalendarRepository workspaceCalendarRepository,
             ITransactionManager transactionManager,
-            ILogger<CreateWorkspaceCalendarRecurrencesUseCase> logger
+            ILogger<UpdateWorkspaceCalendarRecurrencesUseCase> logger
         )
         {
             this.workspaceCalendarRepository = workspaceCalendarRepository;
@@ -28,7 +28,7 @@ namespace CoworkingBooking.Application.WorkspaceCalendar.UseCases
             this.logger = logger;
         }
 
-        public async Task<Result<bool>> Execute(CreateWorkspaceCalendarRecurrenceRequestDTO data)
+        public async Task<Result<bool>> Execute(UpdateWorkspaceCalendarRecurrenceRequestDTO data)
         {
             List<WorkspaceCalendarEntity> workspaceCalendarList = new List<WorkspaceCalendarEntity>();
 
@@ -108,6 +108,20 @@ namespace CoworkingBooking.Application.WorkspaceCalendar.UseCases
             {
                 await transactionManager.StartSession();
 
+                var workspaceCalendarExits = await workspaceCalendarRepository
+                    .FindByWorkspaceAvailability(data.WorkspaceId, data.WorkSpaceAvailability.StartAt, data.WorkSpaceAvailability.Recurrence.Until);
+
+                if (workspaceCalendarExits.Count > 0)
+                {
+                    await workspaceCalendarRepository
+                        .SoftDeleteManyByAvailability(
+                            data.WorkspaceId,
+                            workspaceCalendarExits.First().StartAt,
+                            workspaceCalendarExits.Last().EndAt,
+                            transactionManager.Session
+                        );
+                }
+               
                 await workspaceCalendarRepository.InsertMany(workspaceCalendarList, transactionManager.Session);
 
                 await transactionManager.CommitTransaction();

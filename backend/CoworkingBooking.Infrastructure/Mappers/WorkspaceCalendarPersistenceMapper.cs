@@ -34,6 +34,7 @@ namespace CoworkingBooking.Infraestructure.Mappers
                 startAt: model.StartAt,
                 endAt: model.EndAt,
                 isFull: model.IsFull,
+                isInactive: model.IsInactive,
                 bookings: model.Bookings?.Select(workspaceCalendarBookingPersistenceMapper.ToEntity).ToList() ?? [],
                 createdAt: model.CreatedAt,
                 updatedAt: model.UpdatedAt

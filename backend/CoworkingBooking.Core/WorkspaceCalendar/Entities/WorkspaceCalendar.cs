@@ -7,6 +7,7 @@ namespace CoworkingBooking.Core.WorkspaceCalendar.Entities
         public DateTime StartAt { get; private set; } = default;
         public DateTime EndAt { get; private set; } = default;
         public bool IsFull { get; private set; }
+        public bool IsInactive { get; private set; }
         public IReadOnlyList<WorkspaceCalendarBooking> Bookings { get; private set; } = Array.Empty<WorkspaceCalendarBooking>();
         private List<WorkspaceCalendarBooking> _bookings = new List<WorkspaceCalendarBooking>();
         public DateTime CreatedAt { get; private set; } = default;
@@ -17,14 +18,15 @@ namespace CoworkingBooking.Core.WorkspaceCalendar.Entities
             DateTime startAt,
             DateTime endAt
         ) {
-            this.Id = string.Empty;
-            this.WorkspaceId = NormalizeRequired(workspaceId, nameof(workspaceId));
-            this.StartAt = NormalizeDate(startAt);
-            this.EndAt = NormalizeDate(endAt);
-            this.CreatedAt = DateTime.UtcNow.ToUniversalTime();
-            this.UpdatedAt = DateTime.UtcNow.ToUniversalTime();
+            Id = string.Empty;
+            WorkspaceId = NormalizeRequired(workspaceId, nameof(workspaceId));
+            StartAt = NormalizeDate(startAt);
+            EndAt = NormalizeDate(endAt);
+            CreatedAt = DateTime.UtcNow.ToUniversalTime();
+            UpdatedAt = DateTime.UtcNow.ToUniversalTime();
 
-            this.IsFull = false;
+            IsFull = false;
+            IsInactive = false;
         }
 
         public static WorkspaceCalendarEntity Rehydrate(
@@ -34,6 +36,7 @@ namespace CoworkingBooking.Core.WorkspaceCalendar.Entities
             DateTime endAt,
             List<WorkspaceCalendarBooking> bookings,
             bool isFull,
+            bool isInactive,
             DateTime createdAt,
             DateTime updatedAt
         )
@@ -42,6 +45,7 @@ namespace CoworkingBooking.Core.WorkspaceCalendar.Entities
             {
                 Id = id,
                 IsFull = isFull,
+                IsInactive = isInactive,
                 CreatedAt = createdAt,
                 UpdatedAt = updatedAt
             };
@@ -86,6 +90,12 @@ namespace CoworkingBooking.Core.WorkspaceCalendar.Entities
         public bool HasBooking()
         {
             return _bookings.Count > 0;
+        }
+
+        public void Desactive()
+        {
+            IsInactive = true;
+            UpdatedAt = DateTime.UtcNow;
         }
 
         private static bool Overlaps(WorkspaceCalendarBooking existsBooking, WorkspaceCalendarBooking newBooking)

@@ -44,7 +44,7 @@ builder.Services.AddDefaultAWSOptions(builder.Configuration.GetAWSOptions());
 builder.Services.AddAWSService<IAmazonSQS>();
 
 builder.Services.AddScoped<UpdatedWorkspaceAvailabilityConsumer>();
-builder.Services.AddScoped<CreateWorkspaceCalendarRecurrencesUseCase>();
+builder.Services.AddScoped<UpdateWorkspaceCalendarRecurrencesUseCase>();
 
 builder.Services.AddHostedService<Worker>();
 

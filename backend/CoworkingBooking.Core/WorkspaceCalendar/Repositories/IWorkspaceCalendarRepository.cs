@@ -10,5 +10,6 @@ namespace CoworkingBooking.Core.WorkspaceCalendar.Repositories
         Task<List<WorkspaceCalendarEntity>> FindByWorkspaceAvailability(string workspaceId, DateTime startAt, DateTime until);
         Task<WorkspaceCalendarEntity?> FindOneById(string id);
         Task<WorkspaceCalendarBooking?> UpdateBooking(string id, List<WorkspaceCalendarBooking> workspaceCalendarBooking);
+        Task<long> SoftDeleteManyByAvailability(string workspaceId, DateTime startAt, DateTime until, IClientSessionHandle? session = null);
     }
 }
