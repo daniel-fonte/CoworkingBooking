@@ -4,4 +4,10 @@ namespace CoworkingBooking.Application.WorkspaceCalendar.Dtos
         string StartAt,
         string EndAt
     );
+
+    public sealed record CreateWorkspaceCalendarBookingResponseDTO(
+        string StartAt,
+        string EndAt,
+        double TotalPrice
+    );
 }

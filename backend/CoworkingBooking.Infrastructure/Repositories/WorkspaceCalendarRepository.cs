@@ -178,5 +178,27 @@ namespace CoworkingBooking.Infraestructure
 
             return result.ModifiedCount;
         }
+
+        public async Task<WorkspaceCalendarEntity?> UpdateAvailability(string id, bool availability)
+        {
+            var filter = Builders<WorkspaceCalendarModel>.Filter.Eq(wc => wc.Id, id);
+
+            var update = Builders<WorkspaceCalendarModel>.Update.Set(wc => wc.IsFull, availability);
+
+            var options = new FindOneAndUpdateOptions<WorkspaceCalendarModel>
+            {
+                ReturnDocument = ReturnDocument.After,
+                IsUpsert = false,
+            };
+
+            var result = await _collection.FindOneAndUpdateAsync(filter, update, options);
+
+            if (result == null || result.Bookings == null)
+            {
+                return null;
+            }
+
+            return workspaceCalendarPersistenceMapper.ToEntity(result);
+        }
     }
 }

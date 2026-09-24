@@ -98,6 +98,21 @@ namespace CoworkingBooking.Core.WorkspaceCalendar.Entities
             UpdatedAt = DateTime.UtcNow;
         }
 
+        public bool IsAvailable()
+        {
+            if (_bookings.First().StartAt == StartAt && _bookings.Last().EndAt == EndAt)
+            {
+                return false;
+            }
+            
+            return true;
+        }
+
+        public void CloseBookings()
+        {
+            IsFull = true;
+        }
+
         private static bool Overlaps(WorkspaceCalendarBooking existsBooking, WorkspaceCalendarBooking newBooking)
         {
             return existsBooking.StartAt < newBooking.EndAt && newBooking.StartAt < existsBooking.EndAt;

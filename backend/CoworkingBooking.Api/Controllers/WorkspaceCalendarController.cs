@@ -26,14 +26,14 @@ namespace CoworkingBooking.Api.Controllers
         [ProducesResponseType(StatusCodes.Status409Conflict)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<ApiResponse<bool>>> CreateBooking(
+        public async Task<ActionResult<ApiResponse<CreateWorkspaceCalendarBookingResponseDTO>>> CreateBooking(
             [FromRoute] string calendarId,
             [FromBody] CreateWorkspaceCalendarBookingRequestDTO body
         )
         {
             var result = await createWorkspaceCalendarBookingUsaCase.Execute((calendarId, body));
 
-           return ResultsExtension.ToActionResult(result, data => Ok());
+            return ResultsExtension.ToActionResult(result, data => CreatedAtAction(nameof(CreateBooking), new { calendarId = calendarId }, data));
         }
     }
 }
