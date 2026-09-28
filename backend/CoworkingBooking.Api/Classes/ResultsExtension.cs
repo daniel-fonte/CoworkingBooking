@@ -27,7 +27,7 @@ namespace CoworkingBooking.Api.Classes
                 };
             }
 
-            return onSuccess(new ApiResponse<T>(true, result.Data!, null));
+            return onSuccess(new ApiResponse<T>(true, result.Data));
         }
     }
 }

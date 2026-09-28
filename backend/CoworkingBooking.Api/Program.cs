@@ -12,6 +12,7 @@ using MongoDB.Bson.Serialization;
 using MongoDB.Bson.Serialization.Serializers;
 using MongoDB.Bson;
 using Amazon.SQS;
+using CoworkingBooking.Api.Exceptions;
 
 Log.Logger = new LoggerConfiguration()
     .WriteTo.Console()
@@ -27,19 +28,10 @@ try
     {
         options.SuppressModelStateInvalidFilter = true;
     });
-
-    builder.Services.AddDefaultAWSOptions(builder.Configuration.GetAWSOptions());
-    builder.Services.AddAWSService<IAmazonSQS>();
     
     BsonSerializer.RegisterSerializer(
         new EnumSerializer<DayOfWeek>(BsonType.String)
     );
-
-    builder.Services.AddInfrastructureServices(builder.Configuration);
-
-    builder.Services.AddApplicationServices();
-
-    builder.Services.AddValidatorsFromAssemblyContaining<ApplicationAssembly>();
 
     builder.Services.AddSerilog((services, lc) => lc
         .ReadFrom.Configuration(builder.Configuration)
@@ -67,9 +59,38 @@ try
         options.AddOperationTransformer(new WorkspaceOpenApiOperationTransformer());
     });
 
+    builder.Services.AddExceptionHandler<RedisExceptionHandler>();
+
+    builder.Services.AddInfrastructureServices(builder.Configuration);
+
+    builder.Services.AddDefaultAWSOptions(builder.Configuration.GetAWSOptions());
+    builder.Services.AddAWSService<IAmazonSQS>();
+
+    builder.Services.AddApplicationServices();
+
+    builder.Services.AddHostedService<RedisMonitorService>();
+
+    builder.Services.AddValidatorsFromAssemblyContaining<ApplicationAssembly>();
+
     var app = builder.Build();
 
     app.Services.GetRequiredService<MongodbDatabaseService>();
+
+    using (var scope = app.Services.CreateScope())
+    {
+        var redisService = scope.ServiceProvider
+            .GetRequiredService<RedisService>();
+
+        try
+        {
+            await redisService.ValidateConnectionAsync(5, TimeSpan.FromSeconds(3));
+        }
+        catch (Exception ex)
+        {
+            Log.Fatal(ex, ex.Message);
+            throw;
+        }
+    }
 
     // Executa as migrations
     using (var scope = app.Services.CreateScope())
@@ -96,9 +117,11 @@ try
         app.MapScalarApiReference("/docs");
     }
 
+    app.UseExceptionHandler(_ => { });
+    app.UseStatusCodePages();
     app.UseSerilogRequestLogging();
     app.UseHttpsRedirection();
-    app.MapControllers(); 
+    app.MapControllers();
 
     app.Run();
 }

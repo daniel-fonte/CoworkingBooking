@@ -1,5 +1,4 @@
 services:
-
   mongo1:
     image: mongo:8.0
     container_name: mongo1
@@ -29,7 +28,6 @@ services:
       - mongo1-data:/data/db
     networks:
       - mongo-net
-
   mongo2:
     image: mongo:8.0
     container_name: mongo2
@@ -49,7 +47,6 @@ services:
       - mongo2-data:/data/db
     networks:
       - mongo-net
-
   mongo3:
     image: mongo:8.0
     container_name: mongo3
@@ -110,12 +107,32 @@ services:
       SQS_AWS_REGION: "us-east-1"
     depends_on:
       - localstack
+  redis:
+    image: redis:8.10.2
+    command: redis-server /usr/local/etc/redis/redis.conf
+    restart: unless-stopped
+    ports:
+      - 6379:6379
+    volumes:
+      - redis-data:/data
+      - ./docker/redis/redis.conf:/usr/local/etc/redis/redis.conf:ro
+  redis-insight:
+    image: redis/redisinsight:latest
+    restart: always
+    ports:
+      - 5540:5540
+    volumes:
+      - redis-insight-data:/data
+    depends_on:
+      - redis
 
 volumes:
   seq-data:
   mongo1-data:
   mongo2-data:
   mongo3-data:
+  redis-data:
+  redis-insight-data:
 
 networks:
   mongo-net:

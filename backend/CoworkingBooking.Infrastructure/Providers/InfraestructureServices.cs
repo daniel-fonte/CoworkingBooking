@@ -5,6 +5,8 @@ using CoworkingBooking.Infraestructure.Repositories;
 using CoworkingBooking.Shared.Interfaces;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using StackExchange.Redis;
 
 namespace CoworkingBooking.Infraestructure.Providers
 {
@@ -18,7 +20,13 @@ namespace CoworkingBooking.Infraestructure.Providers
                 configuration.GetSection("MongoDbSettings")
             );
 
+            services.AddSingleton<IConnectionMultiplexer>(_ =>
+                ConnectionMultiplexer.Connect(configuration.GetSection("RedisSettings")["ConnectionString"]!)
+            );
+
             services.AddSingleton<MongodbDatabaseService>();
+            services.AddSingleton<RedisService>();
+
             services.AddScoped<ITransactionManager, MongodbTransactionManagerService>();
 
             services.AddSingleton<WorkspaceAvailabilityRecurrencePersistenceMapper>();

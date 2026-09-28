@@ -39,7 +39,7 @@ namespace CoworkingBooking.Api.Controllers
         ) {
             var result = await createWorkspaceUseCase.Execute(request);
 
-            return ResultsExtension.ToActionResult(result, data => CreatedAtAction(nameof(GetBySlug), new { slug = data.Data!.Slug }, data));
+            return ResultsExtension.ToActionResult(result, data => CreatedAtAction(nameof(GetBySlug), new { slug = result.Data!.Slug }, data));
         }
 
         [HttpGet("{slug}")]
