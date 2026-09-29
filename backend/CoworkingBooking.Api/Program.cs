@@ -13,6 +13,8 @@ using MongoDB.Bson.Serialization.Serializers;
 using MongoDB.Bson;
 using Amazon.SQS;
 using CoworkingBooking.Api.Exceptions;
+using CoworkingBooking.Api.HealthChecks;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 
 Log.Logger = new LoggerConfiguration()
     .WriteTo.Console()
@@ -53,6 +55,10 @@ try
             options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter(JsonNamingPolicy.CamelCase));
             options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
         });
+
+    builder.Services.AddHealthChecks()
+        .AddCheck<RedisHealthCheck>("redis", tags: ["ready"])
+        .AddCheck<MongoDBHealthCheck>("mongoDB", tags: ["ready"]);
 
     builder.Services.AddOpenApi(options => {
         options.AddSchemaTransformer(new WorkspaceOpenApiSchemaTransformer());
@@ -122,6 +128,56 @@ try
     app.UseSerilogRequestLogging();
     app.UseHttpsRedirection();
     app.MapControllers();
+
+    app.MapHealthChecks("/health/ready", new HealthCheckOptions
+    {
+        Predicate = check => check.Tags.Contains("ready"),
+        ResponseWriter = async (context, report) =>
+        {
+            context.Response.ContentType = "application/json";
+
+            var response = new
+            {
+                status = report.Status.ToString(),
+                totalDurationMs = report.TotalDuration.TotalMilliseconds,
+                checks = report.Entries.Select(entry => new
+                {
+                    name = entry.Key,
+                    status = entry.Value.Status.ToString(),
+                    description = entry.Value.Description,
+                    durationMs = entry.Value.Duration.TotalMilliseconds,
+                    error = entry.Value.Exception?.Message
+                })
+            };
+
+            await context.Response.WriteAsJsonAsync(response);
+        }
+    });
+
+    app.MapHealthChecks("/health/live", new HealthCheckOptions
+    {
+       Predicate = _ => false,
+       ResponseWriter = async (context, report) =>
+        {
+            context.Response.ContentType = "application/json";
+
+            var response = new
+            {
+                status = report.Status.ToString(),
+                totalDurationMs = report.TotalDuration.TotalMilliseconds,
+                checks = report.Entries.Select(entry => new
+                {
+                    name = entry.Key,
+                    status = entry.Value.Status.ToString(),
+                    description = entry.Value.Description,
+                    durationMs = entry.Value.Duration.TotalMilliseconds,
+                    error = entry.Value.Exception?.Message
+                })
+            };
+
+            await context.Response.WriteAsJsonAsync(response);
+        }
+    });
 
     app.Run();
 }

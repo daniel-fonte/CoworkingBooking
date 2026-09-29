@@ -26,6 +26,13 @@ namespace CoworkingBooking.Infraestructure.Providers
             settings.MaxConnectionPoolSize = 10;
             settings.MinConnectionPoolSize = 1;
             settings.MaxConnectionIdleTime = TimeSpan.FromMinutes(20);
+            settings.ConnectTimeout = TimeSpan.FromSeconds(5);
+            settings.SocketTimeout = TimeSpan.FromSeconds(20);
+            settings.HeartbeatTimeout = TimeSpan.FromSeconds(5);
+            settings.HeartbeatInterval = TimeSpan.FromSeconds(10);
+            settings.ServerSelectionTimeout = TimeSpan.FromSeconds(3);
+            settings.RetryWrites = true;
+            settings.RetryReads = true;
 
             _client = new MongoClient(settings);
 
