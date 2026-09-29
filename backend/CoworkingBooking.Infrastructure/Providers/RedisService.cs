@@ -58,5 +58,10 @@ namespace CoworkingBooking.Infraestructure.Providers
             }
            
         }
+    
+        public IDatabase GetDatabase()
+        {
+            return _database;
+        }
     }
 }

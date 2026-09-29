@@ -1,3 +1,4 @@
+using System.Runtime.Serialization;
 using CoworkingBooking.Core.Workspace.Repositories;
 using CoworkingBooking.Core.WorkspaceCalendar.Repositories;
 using CoworkingBooking.Infraestructure.Mappers;
@@ -28,6 +29,7 @@ namespace CoworkingBooking.Infraestructure.Providers
             services.AddSingleton<RedisService>();
 
             services.AddScoped<ITransactionManager, MongodbTransactionManagerService>();
+            services.AddSingleton<IDistribuedLock, RedisDistribuedLock>();
 
             services.AddSingleton<WorkspaceAvailabilityRecurrencePersistenceMapper>();
             services.AddSingleton<WorkspaceAvailabilityPersistenceMapper>();
