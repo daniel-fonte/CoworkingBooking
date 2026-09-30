@@ -7,6 +7,7 @@ using CoworkingBooking.Core.Workspace.Events;
 using CoworkingBooking.Core.Workspace.Repositories;
 using CoworkingBooking.Shared.Classes;
 using CoworkingBooking.Shared.Interfaces;
+using CoworkingBooking.Shared.Publishers;
 using CoworkingBooking.Shared.Utils;
 using FluentValidation;
 using Microsoft.Extensions.Logging;
@@ -21,7 +22,7 @@ namespace CoworkingBooking.Application.Workspace.UseCases
         private readonly WorkspaceAvailabilityMapper workspaceAvailabilityMapper;
         private readonly WorkspaceAvailabilityRecurrenceMapper workspaceAvailabilityRecurrenceMapper;
         private readonly ILogger<UpdateAvailabilityUseCase> logger;
-        private readonly IPublish updatedWorkspaceAvailabilityPublish;
+        private readonly IUpdateWorkspaceAvailabilityPublisher updatedWorkspaceAvailabilityPublish;
         private readonly IWorkspaceCalendarExistenceCheckerPort workspaceCalendarExistenceChecker;
 
         public UpdateAvailabilityUseCase(
@@ -31,7 +32,7 @@ namespace CoworkingBooking.Application.Workspace.UseCases
             WorkspaceAvailabilityMapper workspaceAvailabilityMapper,
             WorkspaceAvailabilityRecurrenceMapper workspaceAvailabilityRecurrenceMapper,
             ILogger<UpdateAvailabilityUseCase> logger,
-            IPublish updatedWorkspaceAvailabilityPublish,
+            IUpdateWorkspaceAvailabilityPublisher updatedWorkspaceAvailabilityPublish,
             IWorkspaceCalendarExistenceCheckerPort workspaceCalendarExistenceChecker
         ) {
             this.workspaceRepository = workspaceRepository;

@@ -3,12 +3,12 @@ using Amazon.SQS;
 using Microsoft.Extensions.Logging;
 using Amazon.SQS.Model;
 using System.Text.Json;
-using CoworkingBooking.Shared.Interfaces;
 using CoworkingBooking.Shared.Enums;
+using CoworkingBooking.Shared.Publishers;
 
 namespace CoworkingBooking.Infraestructure.Publishers
 {
-    public class UpdatedWorkspaceAvailabilityPublish : IPublish
+    public class UpdatedWorkspaceAvailabilityPublish : IUpdateWorkspaceAvailabilityPublisher
     {
         private readonly IAmazonSQS sqsClient;
         private readonly ILogger<UpdatedWorkspaceAvailabilityPublish> logger;
@@ -26,7 +26,6 @@ namespace CoworkingBooking.Infraestructure.Publishers
 
         public async Task Initialize()
         {
-
             logger.LogInformation("Getting QueueUrl to Queue: {Name}", UpdatedWorkspaceAvailabilityQueueName);
             var request = new GetQueueUrlRequest
             {
@@ -52,7 +51,7 @@ namespace CoworkingBooking.Infraestructure.Publishers
             
             await sqsClient.SendMessageAsync(sendMessageRequest);
             
-           return Result<bool>.Success(true);
+            return Result<bool>.Success(true);
         }
     }
 }

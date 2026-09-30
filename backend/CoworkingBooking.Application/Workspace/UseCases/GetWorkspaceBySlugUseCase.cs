@@ -4,6 +4,8 @@ using CoworkingBooking.Application.Workspace.Dtos;
 using CoworkingBooking.Core.Workspace.Repositories;
 using CoworkingBooking.Shared.Classes;
 using Microsoft.Extensions.Logging;
+using CoworkingBooking.Shared.Interfaces;
+using CoworkingBooking.Core.Workspace.Entities;
 
 namespace CoworkingBooking.Application.Workspace.UseCases
 {
@@ -11,15 +13,18 @@ namespace CoworkingBooking.Application.Workspace.UseCases
     {
         private readonly IWorkspaceRepository workspaceRepository;
         private readonly WorkspaceMapper workspaceMapper;
+        private readonly ICacheRepository<WorkspaceEntity> cacheRepository;
         private readonly ILogger<GetWorkspaceBySlugUseCase> logger;
 
         public GetWorkspaceBySlugUseCase(
-            IWorkspaceRepository workspaceRepository, 
+            IWorkspaceRepository workspaceRepository,
+            ICacheRepository<WorkspaceEntity> cacheRepository,
             WorkspaceMapper workspaceMapper,
             ILogger<GetWorkspaceBySlugUseCase> logger
         )
         {
             this.workspaceRepository = workspaceRepository;
+            this.cacheRepository = cacheRepository;
             this.workspaceMapper = workspaceMapper;
             this.logger = logger;
         }
@@ -30,7 +35,9 @@ namespace CoworkingBooking.Application.Workspace.UseCases
             {
                 logger.LogInformation("Searching Workspace by Slug: {Slug}", slug);
 
-                var workspaceFound = await workspaceRepository.FindOneBySlug(slug);
+                var cacheKey = $"workspace:{slug}";
+
+                var workspaceFound = await cacheRepository.GetByKey(cacheKey, workspaceRepository.FindOneBySlug);
 
                 if (workspaceFound == null)
                 {

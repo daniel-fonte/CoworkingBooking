@@ -18,9 +18,26 @@ namespace CoworkingBooking.Infraestructure.Providers
                     !t.IsInterface &&
                     publishType.IsAssignableFrom(t));
 
-            foreach (var publish in publishers)
+            foreach (var publisher in publishers)
             {
-                services.AddSingleton(typeof(IPublish), publish);
+                services.AddSingleton(publisher);
+
+                var interfaces = publisher
+                    .GetInterfaces()
+                    .Where(i => i != typeof(IPublish));
+
+                foreach (var @interface in interfaces)
+                {
+                    services.AddSingleton(
+                        @interface,
+                        sp => sp.GetRequiredService(publisher)
+                    );
+                }
+
+                services.AddSingleton(
+                    publishType,
+                    sp => sp.GetRequiredService(publisher)
+                );
             }
 
             services.AddSingleton<PublishConnectionService>();

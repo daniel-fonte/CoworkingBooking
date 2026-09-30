@@ -24,5 +24,6 @@
     <ProjectReference Include="..\CoworkingBooking.Application\CoworkingBooking.Application.csproj" />
     <ProjectReference Include="..\CoworkingBooking.Infrastructure\CoworkingBooking.Infrastructure.csproj" />
     <ProjectReference Include="..\CoworkingBooking.Contracts\CoworkingBooking.Contracts.csproj" />
+    <ProjectReference Include="..\CoworkingBooking.Shared\CoworkingBooking.Shared.csproj" />
   </ItemGroup>
 </Project>

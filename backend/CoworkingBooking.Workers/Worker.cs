@@ -20,10 +20,14 @@ public class Worker : BackgroundService
     {
         using var scope = scopeFactory.CreateScope();
 
-        var consumer = scope.ServiceProvider
+        var updatedWorkspaceAvailabilityConsumer = scope.ServiceProvider
             .GetRequiredService<UpdatedWorkspaceAvailabilityConsumer>();
 
-        await consumer.InitializeAsync(stoppingToken);
+        var refreshCacheConsumer = scope.ServiceProvider
+            .GetRequiredService<RefreshCacheConsumer>();
+
+        await updatedWorkspaceAvailabilityConsumer.InitializeAsync(stoppingToken);
+        await refreshCacheConsumer.InitializeAsync(stoppingToken);
 
         while (!stoppingToken.IsCancellationRequested)
         {
@@ -32,7 +36,8 @@ public class Worker : BackgroundService
                 logger.LogInformation("Worker running at: {time}", DateTimeOffset.Now);
             }
 
-            await consumer.ConsumeAsync(stoppingToken);
+            await updatedWorkspaceAvailabilityConsumer.ConsumeAsync(stoppingToken);
+            await refreshCacheConsumer.ConsumeAsync(stoppingToken);
         }
     }
 }

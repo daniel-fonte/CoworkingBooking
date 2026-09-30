@@ -48,6 +48,8 @@ namespace CoworkingBooking.Infraestructure.Providers
                 typeof(InfrastructureAssembly).Assembly
             );
 
+            services.AddSingleton(typeof(ICacheRepository<>), typeof(RedisCacheRepository<>));
+
             return services;
         }
     }

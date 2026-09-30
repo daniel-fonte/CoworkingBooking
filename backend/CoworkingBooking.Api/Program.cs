@@ -111,7 +111,7 @@ try
     using (var scope = app.Services.CreateScope())
     {
         var migrationRunner = scope.ServiceProvider
-            .GetRequiredService<PublishConnectionService>();
+            .GetRequiredService<PublishConnectionService>(); 
 
         await migrationRunner.GetQueuesUrl();
     }
