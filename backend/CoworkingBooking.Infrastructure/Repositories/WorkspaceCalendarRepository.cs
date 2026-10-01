@@ -200,5 +200,20 @@ namespace CoworkingBooking.Infraestructure
 
             return workspaceCalendarPersistenceMapper.ToEntity(result);
         }
+
+        public Task<WorkspaceCalendarEntity?> UpdateOneById(string id, WorkspaceCalendarEntity entity)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<List<WorkspaceCalendarEntity>> FindAll()
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<WorkspaceCalendarEntity> InsertOne(WorkspaceCalendarEntity workspace)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

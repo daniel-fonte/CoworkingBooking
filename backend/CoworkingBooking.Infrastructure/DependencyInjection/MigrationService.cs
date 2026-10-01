@@ -1,8 +1,9 @@
 using CoworkingBooking.Infraestructure.Migrations;
+using CoworkingBooking.Infraestructure.Providers;
 using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
 
-namespace CoworkingBooking.Infraestructure.Providers
+namespace CoworkingBooking.Infraestructure.DependencyInjection
 {
     public static class MigrationServiceCollectionExtensions
     {

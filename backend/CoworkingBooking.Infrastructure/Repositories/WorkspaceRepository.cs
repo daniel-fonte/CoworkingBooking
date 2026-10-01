@@ -78,6 +78,11 @@ namespace CoworkingBooking.Infraestructure.Repositories
             return workspaceModel;
         }
 
+        public Task<long> InsertMany(List<WorkspaceEntity> entities, IClientSessionHandle? session = null)
+        {
+            throw new NotImplementedException();
+        }
+
         public async Task<WorkspaceEntity> InsertOne(WorkspaceEntity workspace)
         {
             var workspaceModel = workspacePersistenceMapper.ToModel(workspace);
@@ -134,7 +139,7 @@ namespace CoworkingBooking.Infraestructure.Repositories
             return workspacePersistenceMapper.ToEntity(result);
         }
 
-        public async Task<WorkspaceEntity> UpdateOneById(string workspaceId, WorkspaceEntity workspace)
+        public async Task<WorkspaceEntity?> UpdateOneById(string workspaceId, WorkspaceEntity workspace)
         {
             var workspaceModel = this.workspacePersistenceMapper.ToModel(workspace);
 

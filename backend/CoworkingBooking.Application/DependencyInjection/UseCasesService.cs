@@ -2,7 +2,7 @@ using System.Reflection;
 using CoworkingBooking.Application.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace CoworkingBooking.Api.Providers
+namespace CoworkingBooking.Application.DependencyInjection
 {
     public static class UseCasesServiceExtensions
     {

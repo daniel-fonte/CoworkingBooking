@@ -1,4 +1,5 @@
 using CoworkingBooking.Application;
+using CoworkingBooking.Application.DependencyInjection;
 using CoworkingBooking.Application.Workspace.Adapters;
 using CoworkingBooking.Application.Workspace.Mappers;
 using CoworkingBooking.Application.Workspace.Ports;
@@ -14,10 +15,7 @@ namespace CoworkingBooking.Api.Providers
         public static IServiceCollection AddApplicationServices(
             this IServiceCollection services
         ) {
-            services.AddSingleton<WorkspaceAvailabilityRecurrenceMapper>();
-            services.AddSingleton<WorkspaceAvailabilityMapper>();
-            services.AddSingleton<WorkspaceMapper>();
-            services.AddSingleton<WorkspaceCalendarBookingMapper>();
+            services.AddApplicationMappersServices();
 
             services.AddSingleton<IWorkspaceCalendarExistenceCheckerPort, WorkspaceCalendarExistenceCheckerAdapter>();
             services.AddSingleton<IGetWorkspaceAvailabilityTimezonePort, GetWorkspaceAvailabilityTimezoneAdapter>();

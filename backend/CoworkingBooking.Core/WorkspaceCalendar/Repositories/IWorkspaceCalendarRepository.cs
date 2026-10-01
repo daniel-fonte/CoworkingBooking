@@ -1,14 +1,13 @@
 using CoworkingBooking.Core.WorkspaceCalendar.Entities;
 using MongoDB.Driver;
+using CoworkingBooking.Shared.Interfaces;
 
 namespace CoworkingBooking.Core.WorkspaceCalendar.Repositories
 {
-    public interface IWorkspaceCalendarRepository
+    public interface IWorkspaceCalendarRepository : IRepository<WorkspaceCalendarEntity>
     {
-        Task<long> InsertMany(List<WorkspaceCalendarEntity> workspaceCalendars, IClientSessionHandle? session = null);
         Task<List<WorkspaceCalendarEntity>> FindByWorkspaceId(string workspaceId);
         Task<List<WorkspaceCalendarEntity>> FindByWorkspaceAvailability(string workspaceId, DateTime startAt, DateTime until);
-        Task<WorkspaceCalendarEntity?> FindOneById(string id);
         Task<WorkspaceCalendarBooking?> UpdateBooking(string id, List<WorkspaceCalendarBooking> workspaceCalendarBooking);
         Task<long> SoftDeleteManyByAvailability(string workspaceId, DateTime startAt, DateTime until, IClientSessionHandle? session = null);
         Task<WorkspaceCalendarEntity?> UpdateAvailability(string id, bool availability);

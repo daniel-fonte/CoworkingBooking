@@ -1,15 +1,13 @@
-using System.Runtime.Serialization;
 using CoworkingBooking.Core.Workspace.Repositories;
 using CoworkingBooking.Core.WorkspaceCalendar.Repositories;
-using CoworkingBooking.Infraestructure.Mappers;
+using CoworkingBooking.Infraestructure.Providers;
 using CoworkingBooking.Infraestructure.Repositories;
 using CoworkingBooking.Shared.Interfaces;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using StackExchange.Redis;
 
-namespace CoworkingBooking.Infraestructure.Providers
+namespace CoworkingBooking.Infraestructure.DependencyInjection
 {
     public static class InfraestructureServices
     {
@@ -31,11 +29,10 @@ namespace CoworkingBooking.Infraestructure.Providers
             services.AddScoped<ITransactionManager, MongodbTransactionManagerService>();
             services.AddSingleton<IDistribuedLock, RedisDistribuedLock>();
 
-            services.AddSingleton<WorkspaceAvailabilityRecurrencePersistenceMapper>();
-            services.AddSingleton<WorkspaceAvailabilityPersistenceMapper>();
-            services.AddSingleton<WorkspacePersistenceMapper>();
-            services.AddSingleton<WorkspaceCalendarPersistenceMapper>();
-            services.AddSingleton<WorkspaceCalendarBookingPersistenceMapper>();
+            services.AddInfraestructureMappersService();
+            services.AddRepositoriesService(
+                typeof(InfrastructureAssembly).Assembly
+            );
 
             services.AddSingleton<IWorkspaceRepository, WorkspaceRepository>();
             services.AddSingleton<IWorkspaceCalendarRepository, WorkspaceCalendarRepository>();

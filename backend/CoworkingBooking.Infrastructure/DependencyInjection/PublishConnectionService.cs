@@ -1,7 +1,7 @@
 using CoworkingBooking.Shared.Interfaces;
 using Microsoft.Extensions.Logging;
 
-namespace CoworkingBooking.Infraestructure.Providers
+namespace CoworkingBooking.Infraestructure.DependencyInjection
 {
     public class PublishConnectionService
     {

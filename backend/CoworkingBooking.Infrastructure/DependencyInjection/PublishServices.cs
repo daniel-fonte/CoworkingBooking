@@ -2,7 +2,7 @@ using System.Reflection;
 using CoworkingBooking.Shared.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace CoworkingBooking.Infraestructure.Providers
+namespace CoworkingBooking.Infraestructure.DependencyInjection
 {
     public static class PublishServices
     {
