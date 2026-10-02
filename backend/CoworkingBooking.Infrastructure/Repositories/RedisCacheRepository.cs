@@ -1,15 +1,15 @@
 using System.Text.Json;
 using CoworkingBooking.Infraestructure.Providers;
-using CoworkingBooking.Infraestructure.Publishers;
 using CoworkingBooking.Shared.Classes;
 using CoworkingBooking.Shared.Events;
 using CoworkingBooking.Shared.Interfaces;
 using CoworkingBooking.Shared.Publishers;
 using StackExchange.Redis;
+// using Newtonsoft.Json;
 
 namespace CoworkingBooking.Infraestructure.Repositories
 {
-    public class RedisCacheRepository<T> : ICacheRepository<T>
+    public class RedisCacheRepository<TEntity, TCache> : ICacheRepository<TEntity, TCache>
     {
         private readonly RedisService _redisService;
         private readonly IDatabase _database;
@@ -25,13 +25,28 @@ namespace CoworkingBooking.Infraestructure.Repositories
             _refreshCachePublish = refreshCachePublish;
         }
 
-        public async Task<T?> GetByKey(string key, Func<string, Task<T?>> resolveDataFunction)
+        public async Task DeleteByKey(string key)
+        {
+            await _database.KeyDeleteAsync(key);
+        }
+
+        public async Task<TEntity?> GetByKey(
+            string key, 
+            Func<string, Task<TEntity?>> resolveDataFunction,
+            Func<TCache, TEntity> mapToEntity
+        )
         {
             var cacheFound = await _database.StringGetAsync(key);
 
             if (cacheFound.HasValue)
             {
-                var cached = JsonSerializer.Deserialize<CacheEntry<T>>(cacheFound.ToString());
+                var options = new JsonSerializerOptions
+                {
+                    IncludeFields = false,
+                    PropertyNameCaseInsensitive = true
+                };
+
+                var cached = JsonSerializer.Deserialize<CacheEntry<TCache>>(cacheFound.ToString(), options);
 
                 if (cached is null)
                 {
@@ -43,11 +58,11 @@ namespace CoworkingBooking.Infraestructure.Repositories
                 if (createdAtElapsed > 3600)
                 {
                     await _refreshCachePublish.EnqueueMessage(
-                        new RefreshCacheEvent(typeof(T).ToString(), key)
+                        new RefreshCacheEvent(typeof(TCache).ToString(), key)
                     );
                 }
 
-                return cached.Data;
+                return mapToEntity(cached.Data);
             }
 
             var keyValueIndentifier = key.Split(':')[1];
@@ -59,7 +74,7 @@ namespace CoworkingBooking.Infraestructure.Repositories
                 return default;
             }
 
-            var cacheEntry = new CacheEntry<T>
+            var cacheEntry = new CacheEntry<TEntity>
             {
                 Data = dataFromDB,
                 CreatedAt = DateTimeOffset.UtcNow.ToUnixTimeSeconds()

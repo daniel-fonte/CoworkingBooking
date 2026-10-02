@@ -11,7 +11,7 @@ namespace CoworkingBooking.Application.Workspace.Dtos
         string Name,
         string Description,
         string Slug,
-        WorkspaceStatus WorkspaceStatus,
+        WorkspaceStatus Status,
         WorkspaceType Type,
         Coordinates Coordinates,
         double PricePerHour,

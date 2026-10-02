@@ -1,7 +1,7 @@
 using System.Text.Json;
 using Amazon.SQS;
 using Amazon.SQS.Model;
-using CoworkingBooking.Application.Workspace;
+using CoworkingBooking.Application.Workspace.Cache;
 using CoworkingBooking.Shared.Events;
 using CoworkingBooking.Shared.Interfaces;
 

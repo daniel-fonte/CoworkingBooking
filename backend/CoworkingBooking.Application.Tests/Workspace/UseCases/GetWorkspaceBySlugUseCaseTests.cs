@@ -1,4 +1,5 @@
 using CoworkingBooking.Application.Tests.TestData;
+using CoworkingBooking.Application.Workspace.Cache;
 using CoworkingBooking.Application.Workspace.Mappers;
 using CoworkingBooking.Application.Workspace.UseCases;
 using CoworkingBooking.Core.Workspace.Entities;
@@ -12,7 +13,7 @@ namespace CoworkingBooking.Application.Tests.Workspace.UseCases
     [TestFixture]
     public class GetWorkspaceBySlugUseCaseTests
     {
-        private static GetWorkspaceBySlugUseCase CreateUseCase(ICacheRepository<WorkspaceEntity> cacheRepository) => new(
+        private static GetWorkspaceBySlugUseCase CreateUseCase(ICacheRepository<WorkspaceEntity, WorkspaceCache> cacheRepository) => new(
             new Mock<IWorkspaceRepository>().Object,
             cacheRepository,
             new WorkspaceMapper(),
@@ -23,9 +24,9 @@ namespace CoworkingBooking.Application.Tests.Workspace.UseCases
         public async Task Execute_WorkspaceExists_ReturnsDetails()
         {
             var workspaceId = WorkspaceFactory.NewId();
-            var cacheRepository = new Mock<ICacheRepository<WorkspaceEntity>>();
+            var cacheRepository = new Mock<ICacheRepository<WorkspaceEntity, WorkspaceCache>>();
             cacheRepository
-                .Setup(c => c.GetByKey($"workspace:{WorkspaceFactory.Slug}", It.IsAny<Func<string, Task<WorkspaceEntity?>>>()))
+                .Setup(c => c.GetByKey($"workspace:{WorkspaceFactory.Slug}", It.IsAny<Func<string, Task<WorkspaceEntity?>>>(), It.IsAny<Func<WorkspaceCache, WorkspaceEntity>>()))
                 .ReturnsAsync(WorkspaceFactory.Create(workspaceId));
             var useCase = CreateUseCase(cacheRepository.Object);
 
@@ -39,9 +40,9 @@ namespace CoworkingBooking.Application.Tests.Workspace.UseCases
         [Test]
         public async Task Execute_WorkspaceNotFound_ReturnsNotFound()
         {
-            var cacheRepository = new Mock<ICacheRepository<WorkspaceEntity>>();
+            var cacheRepository = new Mock<ICacheRepository<WorkspaceEntity, WorkspaceCache>>();
             cacheRepository
-                .Setup(c => c.GetByKey(It.IsAny<string>(), It.IsAny<Func<string, Task<WorkspaceEntity?>>>()))
+                .Setup(c => c.GetByKey(It.IsAny<string>(), It.IsAny<Func<string, Task<WorkspaceEntity?>>>(), It.IsAny<Func<WorkspaceCache, WorkspaceEntity>>()))
                 .ReturnsAsync((WorkspaceEntity?)null);
             var useCase = CreateUseCase(cacheRepository.Object);
 

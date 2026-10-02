@@ -14,5 +14,15 @@ namespace CoworkingBooking.Application.Workspace.Mappers
                 byMonth
             );
         }
+
+        public WorkSpaceAvailabilityRecurrence ToEntity(Frequency frequency, DateTime until, List<DayOfWeek>? byDay, List<int>? byMonth)
+        {
+            return new WorkSpaceAvailabilityRecurrence(
+                frequency,
+                until,
+                byDay,
+                byMonth
+            );
+        }
     }
 }

@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using CoworkingBooking.Shared.Enums;
 
 namespace CoworkingBooking.Core.Workspace.Entities
@@ -9,7 +10,12 @@ namespace CoworkingBooking.Core.Workspace.Entities
         public WorkSpaceAvailabilityRecurrence Recurrence { get; private set; }
         public string Timezone { get; private set; }
 
-        public WorkSpaceAvailability(DateTime startAt, DateTime endAt, WorkSpaceAvailabilityRecurrence recurrence, string timezone)
+        public WorkSpaceAvailability(
+            DateTime startAt,
+            DateTime endAt,
+            WorkSpaceAvailabilityRecurrence recurrence,
+            string timezone
+        )
         {
             this.StartAt = NormalizeDate(startAt);
             this.EndAt = NormalizeDate(endAt);
@@ -58,6 +64,7 @@ namespace CoworkingBooking.Core.Workspace.Entities
         public List<DayOfWeek>? ByDay { get; private set; }
         public List<int>? ByMonth { get; private set; }
 
+        
         public WorkSpaceAvailabilityRecurrence(Frequency frequency, DateTime until, List<DayOfWeek>? byDay, List<int>? byMonth)
         {
             this.Frequency = ValidateFrequency(frequency);

@@ -6,6 +6,7 @@ using CoworkingBooking.Shared.Classes;
 using Microsoft.Extensions.Logging;
 using CoworkingBooking.Shared.Interfaces;
 using CoworkingBooking.Core.Workspace.Entities;
+using CoworkingBooking.Application.Workspace.Cache;
 
 namespace CoworkingBooking.Application.Workspace.UseCases
 {
@@ -13,12 +14,12 @@ namespace CoworkingBooking.Application.Workspace.UseCases
     {
         private readonly IWorkspaceRepository workspaceRepository;
         private readonly WorkspaceMapper workspaceMapper;
-        private readonly ICacheRepository<WorkspaceEntity> cacheRepository;
+        private readonly ICacheRepository<WorkspaceEntity, WorkspaceCache> cacheRepository;
         private readonly ILogger<GetWorkspaceBySlugUseCase> logger;
 
         public GetWorkspaceBySlugUseCase(
             IWorkspaceRepository workspaceRepository,
-            ICacheRepository<WorkspaceEntity> cacheRepository,
+            ICacheRepository<WorkspaceEntity, WorkspaceCache> cacheRepository,
             WorkspaceMapper workspaceMapper,
             ILogger<GetWorkspaceBySlugUseCase> logger
         )
@@ -37,12 +38,13 @@ namespace CoworkingBooking.Application.Workspace.UseCases
 
                 var cacheKey = $"workspace:{slug}";
 
-                var workspaceFound = await cacheRepository.GetByKey(cacheKey, workspaceRepository.FindOneBySlug);
+                var workspaceFound = await cacheRepository
+                    .GetByKey(cacheKey, workspaceRepository.FindOneBySlug, workspaceMapper.ToEntity);
 
                 if (workspaceFound == null)
                 {
                     logger.LogWarning("Workspace with Slug {Slug} not found", slug);
-                    return Result<DetailsWorkspaceResponseDTO>.Failure(new List<Error> { new Error("Workspace not found.", ErrorType.NotFound) });
+                    return Result<DetailsWorkspaceResponseDTO>.Failure([ new Error("Workspace not found.", ErrorType.NotFound) ]);
                 }
 
                 var response = workspaceMapper.ToDetailsResponseDTO(workspaceFound);
@@ -55,11 +57,11 @@ namespace CoworkingBooking.Application.Workspace.UseCases
                 if (ex is ArgumentOutOfRangeException || ex is ArgumentNullException || ex is InvalidOperationException || ex is ArgumentException) 
                 {
                     logger.LogWarning(ex, ex.Message);
-                    return Result<DetailsWorkspaceResponseDTO>.Failure(new List<Error> { new Error(ex.Message, ErrorType.ValidationError) });
+                    return Result<DetailsWorkspaceResponseDTO>.Failure([ new Error(ex.Message, ErrorType.ValidationError) ]);
                 }
 
                 logger.LogError(ex, "Occured unexpected error.");
-                return Result<DetailsWorkspaceResponseDTO>.Failure(new List<Error> { new Error("An unexpected error occurred.", ErrorType.InternalServerError) });
+                return Result<DetailsWorkspaceResponseDTO>.Failure([ new Error("An unexpected error occurred.", ErrorType.InternalServerError) ]);
             }
         }
     }

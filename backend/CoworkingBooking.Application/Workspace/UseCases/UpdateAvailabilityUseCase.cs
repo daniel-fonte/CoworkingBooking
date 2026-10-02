@@ -1,4 +1,5 @@
 using CoworkingBooking.Application.Interfaces;
+using CoworkingBooking.Application.Workspace.Cache;
 using CoworkingBooking.Application.Workspace.Dtos;
 using CoworkingBooking.Application.Workspace.Mappers;
 using CoworkingBooking.Application.Workspace.Ports;
@@ -24,6 +25,7 @@ namespace CoworkingBooking.Application.Workspace.UseCases
         private readonly ILogger<UpdateAvailabilityUseCase> logger;
         private readonly IUpdateWorkspaceAvailabilityPublisher updatedWorkspaceAvailabilityPublish;
         private readonly IWorkspaceCalendarExistenceCheckerPort workspaceCalendarExistenceChecker;
+        private readonly ICacheRepository<WorkspaceAvailabilityCache, WorkspaceAvailabilityCache> cacheRepository;
 
         public UpdateAvailabilityUseCase(
             IWorkspaceRepository workspaceRepository,
@@ -33,7 +35,8 @@ namespace CoworkingBooking.Application.Workspace.UseCases
             WorkspaceAvailabilityRecurrenceMapper workspaceAvailabilityRecurrenceMapper,
             ILogger<UpdateAvailabilityUseCase> logger,
             IUpdateWorkspaceAvailabilityPublisher updatedWorkspaceAvailabilityPublish,
-            IWorkspaceCalendarExistenceCheckerPort workspaceCalendarExistenceChecker
+            IWorkspaceCalendarExistenceCheckerPort workspaceCalendarExistenceChecker,
+            ICacheRepository<WorkspaceAvailabilityCache, WorkspaceAvailabilityCache> cacheRepository
         ) {
             this.workspaceRepository = workspaceRepository;
             this.validator = validator;
@@ -43,6 +46,7 @@ namespace CoworkingBooking.Application.Workspace.UseCases
             this.logger = logger;
             this.updatedWorkspaceAvailabilityPublish = updatedWorkspaceAvailabilityPublish;
             this.workspaceCalendarExistenceChecker = workspaceCalendarExistenceChecker;
+            this.cacheRepository = cacheRepository;
         }
 
         public async Task<Result<UpdateWorkspaceAvailabilityResponseDTO>> Execute((string slug, UpdateWorkspaceAvailabilityRequestDTO availability) input)
@@ -99,6 +103,8 @@ namespace CoworkingBooking.Application.Workspace.UseCases
                 workspaceFound.UpdateStatus(WorkspaceStatus.Available);
 
                 var updatedWorkspaceStatus = await workspaceRepository.UpdateStatusById(workspaceFound.Id, workspaceFound.Status);
+
+                await cacheRepository.DeleteByKey($"workspace:{workspaceFound.Slug}");
 
                 var response = this.workspaceAvailabilityMapper.ToWorkspaceAvailabilityResponseDTO(updatedWorkspaceStatus.Availability!);
 

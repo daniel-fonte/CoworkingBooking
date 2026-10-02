@@ -45,7 +45,7 @@ namespace CoworkingBooking.Infraestructure.DependencyInjection
                 typeof(InfrastructureAssembly).Assembly
             );
 
-            services.AddSingleton(typeof(ICacheRepository<>), typeof(RedisCacheRepository<>));
+            services.AddSingleton(typeof(ICacheRepository<,>), typeof(RedisCacheRepository<,>));
 
             return services;
         }

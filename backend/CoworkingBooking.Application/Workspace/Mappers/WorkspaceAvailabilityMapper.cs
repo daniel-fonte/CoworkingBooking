@@ -1,3 +1,4 @@
+using CoworkingBooking.Application.Workspace.Cache;
 using CoworkingBooking.Application.Workspace.Dtos;
 using CoworkingBooking.Core.Workspace.Entities;
 using CoworkingBooking.Shared.Utils;
@@ -27,6 +28,23 @@ namespace CoworkingBooking.Application.Workspace.Mappers
                     byMonth: availability.ByMonth
                 ),
                 availability.Timezone
+            );
+        }
+
+        public WorkSpaceAvailability ToEntity(WorkspaceAvailabilityCache workspaceAvailabilityCache)
+        {
+            var recurrence = workspaceAvailabilityRecurrenceMapper.ToEntity(
+                workspaceAvailabilityCache.Recurrence.Frequency,
+                workspaceAvailabilityCache.Recurrence.Until,
+                workspaceAvailabilityCache.Recurrence.ByDay,
+                workspaceAvailabilityCache.Recurrence.ByMonth
+            );
+
+            return WorkSpaceAvailability.Rehydrate(
+                workspaceAvailabilityCache.StartAt,
+                workspaceAvailabilityCache.EndAt,
+                recurrence,
+                workspaceAvailabilityCache.Timezone
             );
         }
 

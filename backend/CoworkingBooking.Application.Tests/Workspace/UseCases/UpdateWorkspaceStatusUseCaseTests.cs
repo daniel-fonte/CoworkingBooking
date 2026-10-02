@@ -37,7 +37,7 @@ namespace CoworkingBooking.Application.Tests.Workspace.UseCases
             var result = await useCase.Execute((WorkspaceFactory.Slug, new UpdateWorkspaceStatusRequestDTO(WorkspaceStatus.Maintenance)));
 
             Assert.That(result.IsSuccess, Is.True);
-            Assert.That(result.Data!.WorkspaceStatus, Is.EqualTo(WorkspaceStatus.Maintenance));
+            Assert.That(result.Data!.Status, Is.EqualTo(WorkspaceStatus.Maintenance));
             workspaceRepository.Verify(
                 r => r.UpdateOneById(workspaceId, It.Is<WorkspaceEntity>(w => w.Status == WorkspaceStatus.Maintenance)),
                 Times.Once

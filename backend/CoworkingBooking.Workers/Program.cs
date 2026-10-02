@@ -8,7 +8,7 @@ using CoworkingBooking.Workers.Consumers;
 using CoworkingBooking.Workers.Mappers;
 using WorkspaceAvailabilityMapperWorker = CoworkingBooking.Workers.Mappers.WorkspaceAvailabilityMapper;
 using Serilog;
-using CoworkingBooking.Application.Workspace;
+using CoworkingBooking.Application.Workspace.Cache;
 using CoworkingBooking.Infraestructure.Repositories;
 using StackExchange.Redis;
 using CoworkingBooking.Application.DependencyInjection;
@@ -60,7 +60,7 @@ builder.Services.AddPublishers(
     typeof(InfrastructureAssembly).Assembly
 );
 
-builder.Services.AddSingleton(typeof(ICacheRepository<>), typeof(RedisCacheRepository<>));
+builder.Services.AddSingleton(typeof(ICacheRepository<,>), typeof(RedisCacheRepository<,>));
 
 builder.Services.AddScoped<UpdatedWorkspaceAvailabilityConsumer>();
 builder.Services.AddScoped<RefreshCacheConsumer>();

@@ -4,15 +4,15 @@ using CoworkingBooking.Core.Workspace.Repositories;
 using CoworkingBooking.Shared.Classes;
 using CoworkingBooking.Shared.Interfaces;
 
-namespace CoworkingBooking.Application.Workspace
+namespace CoworkingBooking.Application.Workspace.Cache
 {
     public class WorkspaceRefreshCacheHandler : IRefreshCacheHandler
     {
-        private readonly ICacheRepository<WorkspaceEntity> cacheRepository;
+        private readonly ICacheRepository<WorkspaceEntity, WorkspaceCache> cacheRepository;
         private readonly IWorkspaceRepository workspaceRepository;
 
         public WorkspaceRefreshCacheHandler(
-            ICacheRepository<WorkspaceEntity> cacheRepository,
+            ICacheRepository<WorkspaceEntity, WorkspaceCache> cacheRepository,
             IWorkspaceRepository workspaceRepository
         )
         {
