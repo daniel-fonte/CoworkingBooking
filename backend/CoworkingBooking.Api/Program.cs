@@ -24,6 +24,8 @@ try
 
     builder.Services.AddInfrastructureServices(builder.Configuration);
 
+    builder.Services.AddHangfireServices(builder.Configuration);
+
     builder.Services.AddApplicationServices();
 
     var app = builder.Build();
@@ -31,6 +33,8 @@ try
     await app.InitializeApplicationAsync();
 
     app.UseApplicationPipeline();
+
+    HangfireExtensions.AddRecurringJobs();
 
     app.Run();
 }

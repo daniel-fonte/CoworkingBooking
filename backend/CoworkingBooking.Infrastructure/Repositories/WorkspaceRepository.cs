@@ -6,6 +6,7 @@ using CoworkingBooking.Infraestructure.Mappers;
 using CoworkingBooking.Infraestructure.Models;
 using CoworkingBooking.Infraestructure.Providers;
 using CoworkingBooking.Shared.Exceptions;
+using CoworkingBooking.Shared.Interfaces;
 using MongoDB.Driver;
 
 namespace CoworkingBooking.Infraestructure.Repositories
@@ -29,6 +30,11 @@ namespace CoworkingBooking.Infraestructure.Repositories
             this.workspacePersistenceMapper = workspacePersistenceMapper;
             _mongodbDatabaseService = mongodbDatabaseService;
             _collection = _mongodbDatabaseService.GetCollection<WorkspaceModel>("workspaces");
+        }
+
+        public Task DeleteMany<TField>(System.Linq.Expressions.Expression<Func<WorkspaceEntity, TField>> field, TField value)
+        {
+            throw new NotImplementedException();
         }
 
         public Task<List<WorkspaceEntity>> FindAll()
@@ -177,6 +183,11 @@ namespace CoworkingBooking.Infraestructure.Repositories
             var workspaceAvailabilityEntity = workspaceAvailabilityPersistenceMapper.ToEntity(result.Availability);
 
             return workspacePersistenceMapper.ToEntity(result);
+        }
+
+        Task<long> IRepository<WorkspaceEntity>.DeleteMany<TField>(System.Linq.Expressions.Expression<Func<WorkspaceEntity, TField>> field, TField value)
+        {
+            throw new NotImplementedException();
         }
     }
 }

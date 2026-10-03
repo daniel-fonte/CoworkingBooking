@@ -40,6 +40,14 @@ namespace CoworkingBooking.Application.WorkspaceCalendar.UseCases
                 var currentEndAtLocal = TimeZoneInfo.ConvertTimeFromUtc(data.WorkSpaceAvailability.EndAt, timeZone);
 
                 var untilAtLocal = TimeZoneInfo.ConvertTimeFromUtc(data.WorkSpaceAvailability.Recurrence.Until, timeZone);
+
+                WorkspaceCalendarEntity firsWorkspaceCalendarEntity = new WorkspaceCalendarEntity(
+                    workspaceId: data.WorkspaceId,
+                    startAt: data.WorkSpaceAvailability.StartAt,
+                    endAt: data.WorkSpaceAvailability.EndAt
+                );
+
+                workspaceCalendarList.Add(firsWorkspaceCalendarEntity);
                 
                 if (data.WorkSpaceAvailability.Recurrence.Frequency == Frequency.WEEKLY && data.WorkSpaceAvailability.Recurrence.ByDay is not null)
                 {
@@ -68,15 +76,7 @@ namespace CoworkingBooking.Application.WorkspaceCalendar.UseCases
                 }
 
                 if (data.WorkSpaceAvailability.Recurrence.Frequency == Frequency.DAILY && data.WorkSpaceAvailability.Recurrence.ByDay is null)
-                {
-                    WorkspaceCalendarEntity firsWorkspaceCalendarEntity = new WorkspaceCalendarEntity(
-                        workspaceId: data.WorkspaceId,
-                        startAt: data.WorkSpaceAvailability.StartAt,
-                        endAt: data.WorkSpaceAvailability.EndAt
-                    );
-
-                    workspaceCalendarList.Add(firsWorkspaceCalendarEntity);
-                    
+                {   
                     while (DateOnly.FromDateTime(currentStartAtLocal) < DateOnly.FromDateTime(untilAtLocal))
                     {
                         var nextStartAtLocal = DatesUtils.GetNextDay(currentStartAtLocal, null);

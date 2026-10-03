@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Linq.Expressions;
 using System.Text.Json.Nodes;
 using CoworkingBooking.Core.WorkspaceCalendar.Constraints;
 using CoworkingBooking.Core.WorkspaceCalendar.Entities;
@@ -214,6 +215,17 @@ namespace CoworkingBooking.Infraestructure
         public Task<WorkspaceCalendarEntity> InsertOne(WorkspaceCalendarEntity workspace)
         {
             throw new NotImplementedException();
+        }
+
+        public async Task<long> DeleteMany<TField>(Expression<Func<WorkspaceCalendarEntity, TField>> field, TField value)
+        {
+            var fieldName = ((MemberExpression)field.Body).Member.Name;
+
+            var filter = Builders<WorkspaceCalendarModel>.Filter.Eq(fieldName, value);
+
+            DeleteResult deleteResult = await _collection.DeleteManyAsync(filter);
+
+            return deleteResult.DeletedCount;
         }
     }
 }

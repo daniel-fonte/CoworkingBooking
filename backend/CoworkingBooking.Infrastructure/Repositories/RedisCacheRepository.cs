@@ -27,7 +27,7 @@ namespace CoworkingBooking.Infraestructure.Repositories
 
         public async Task DeleteByKey(string key)
         {
-            await _database.KeyDeleteAsync(key);
+            await _database.KeyDeleteAsync(key, CommandFlags.FireAndForget);
         }
 
         public async Task<TEntity?> GetByKey(

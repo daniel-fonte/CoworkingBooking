@@ -1,3 +1,4 @@
+using Hangfire;
 using Scalar.AspNetCore;
 using Serilog;
 
@@ -22,6 +23,8 @@ namespace CoworkingBooking.Api.Extensions
             app.MapControllers();
 
             app.MapApplicationHealthChecks();
+
+            app.UseHangfireDashboard("/jobs");
 
             return app;
         }

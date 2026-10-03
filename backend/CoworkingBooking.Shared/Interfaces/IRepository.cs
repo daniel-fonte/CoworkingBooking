@@ -1,3 +1,4 @@
+using System.Linq.Expressions;
 using MongoDB.Driver;
 
 namespace CoworkingBooking.Shared.Interfaces
@@ -9,5 +10,9 @@ namespace CoworkingBooking.Shared.Interfaces
         Task<long> InsertMany(List<TEntity> entities, IClientSessionHandle? session = null);
         Task<List<TEntity>> FindAll();
         Task<TEntity> InsertOne(TEntity workspace);
+        Task<long> DeleteMany<TField>(
+            Expression<Func<TEntity, TField>> field,
+            TField value
+        );
     }
 }
