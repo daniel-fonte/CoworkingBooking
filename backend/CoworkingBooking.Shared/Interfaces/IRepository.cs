@@ -14,5 +14,17 @@ namespace CoworkingBooking.Shared.Interfaces
             Expression<Func<TEntity, TField>> field,
             TField value
         );
+        Task<List<TEntity>> FindMany<TField>(
+            Expression<Func<TEntity, TField>> field,
+            TField value,
+            CancellationToken cancellationToken = default
+        );
+        Task<CursorPaginationRecordResponse<TEntity>> CursorPagination<TField>(
+            Expression<Func<TEntity, TField>> field,
+            TField value,
+            string? cursor,
+            int limit = 10,
+            CancellationToken cancellationToken = default
+        );
     }
 }

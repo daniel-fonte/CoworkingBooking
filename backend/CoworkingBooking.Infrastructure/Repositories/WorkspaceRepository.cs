@@ -32,12 +32,22 @@ namespace CoworkingBooking.Infraestructure.Repositories
             _collection = _mongodbDatabaseService.GetCollection<WorkspaceModel>("workspaces");
         }
 
+        public Task<List<WorkspaceEntity>> CursorPagination<TField>(System.Linq.Expressions.Expression<Func<WorkspaceEntity, TField>> field, TField value, string? cursor, int limit = 10, CancellationToken cancellationToken = default)
+        {
+            throw new NotImplementedException();
+        }
+
         public Task DeleteMany<TField>(System.Linq.Expressions.Expression<Func<WorkspaceEntity, TField>> field, TField value)
         {
             throw new NotImplementedException();
         }
 
         public Task<List<WorkspaceEntity>> FindAll()
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<List<WorkspaceEntity>> FindMany<TField>(System.Linq.Expressions.Expression<Func<WorkspaceEntity, TField>> field, TField value, CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
         }
@@ -183,6 +193,11 @@ namespace CoworkingBooking.Infraestructure.Repositories
             var workspaceAvailabilityEntity = workspaceAvailabilityPersistenceMapper.ToEntity(result.Availability);
 
             return workspacePersistenceMapper.ToEntity(result);
+        }
+
+        Task<CursorPaginationRecordResponse<WorkspaceEntity>> IRepository<WorkspaceEntity>.CursorPagination<TField>(System.Linq.Expressions.Expression<Func<WorkspaceEntity, TField>> field, TField value, string? cursor, int limit, CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException();
         }
 
         Task<long> IRepository<WorkspaceEntity>.DeleteMany<TField>(System.Linq.Expressions.Expression<Func<WorkspaceEntity, TField>> field, TField value)

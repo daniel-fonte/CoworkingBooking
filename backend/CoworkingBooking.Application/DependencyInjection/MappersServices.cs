@@ -14,6 +14,7 @@ namespace CoworkingBooking.Application.DependencyInjection
             services.AddSingleton<WorkspaceAvailabilityRecurrenceMapper>();
             
             services.AddSingleton<WorkspaceMapper>();
+            services.AddSingleton<WorkspaceCalendarMapper>();
             services.AddSingleton<WorkspaceCalendarBookingMapper>();
 
             return services;

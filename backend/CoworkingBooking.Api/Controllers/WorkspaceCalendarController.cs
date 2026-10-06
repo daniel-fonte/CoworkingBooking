@@ -2,6 +2,7 @@ using CoworkingBooking.Api.Classes;
 using CoworkingBooking.Application.WorkspaceCalendar.Dtos;
 using CoworkingBooking.Application.WorkspaceCalendar.UseCases;
 using CoworkingBooking.Shared.Classes;
+using CoworkingBooking.Shared.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CoworkingBooking.Api.Controllers
@@ -11,12 +12,15 @@ namespace CoworkingBooking.Api.Controllers
     public class WorkspaceCalendarController : ControllerBase
     {
         private readonly CreateWorkspaceCalendarBookingUseCase createWorkspaceCalendarBookingUsaCase;
+        private readonly GetWorkspaceCalendarRecurrencesUseCase getWorkspaceCalendarRecurrencesUseCase;
 
         public WorkspaceCalendarController(
-            CreateWorkspaceCalendarBookingUseCase createWorkspaceCalendarBookingUsaCase
+            CreateWorkspaceCalendarBookingUseCase createWorkspaceCalendarBookingUsaCase,
+            GetWorkspaceCalendarRecurrencesUseCase getWorkspaceCalendarRecurrencesUseCase
         )
         {
             this.createWorkspaceCalendarBookingUsaCase = createWorkspaceCalendarBookingUsaCase;
+            this.getWorkspaceCalendarRecurrencesUseCase = getWorkspaceCalendarRecurrencesUseCase;
         }
 
         [HttpPost("{calendarId}/booking")]
@@ -31,9 +35,26 @@ namespace CoworkingBooking.Api.Controllers
             [FromBody] CreateWorkspaceCalendarBookingRequestDTO body
         )
         {
+
             var result = await createWorkspaceCalendarBookingUsaCase.Execute((calendarId, body));
 
             return ResultsExtension.ToActionResult(result, data => CreatedAtAction(nameof(CreateBooking), new { calendarId = calendarId }, data));
+        }
+
+        [HttpGet("{workspaceId}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<ApiResponse<CursorPaginationRecordResponse<GetWorkspaceCalendarRecurrenceResponseDTO>>>> GetWorkspaceCalendarRecurrences(
+            [FromRoute] string workspaceId,
+            [FromQuery] CursorPaginationRecordRequest cursorPaginationRecordRequest,
+            CancellationToken cancellationToken
+        )
+        {
+            var result = await getWorkspaceCalendarRecurrencesUseCase.Execute((workspaceId, cursorPaginationRecordRequest, cancellationToken));
+
+            return ResultsExtension.ToActionResult(result, data => Ok(data));
         }
     }
 }

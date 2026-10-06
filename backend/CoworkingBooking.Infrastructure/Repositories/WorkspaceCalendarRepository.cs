@@ -8,6 +8,7 @@ using CoworkingBooking.Infraestructure.Mappers;
 using CoworkingBooking.Infraestructure.Models;
 using CoworkingBooking.Infraestructure.Providers;
 using CoworkingBooking.Shared.Exceptions;
+using CoworkingBooking.Shared.Interfaces;
 using MongoDB.Driver;
 
 namespace CoworkingBooking.Infraestructure
@@ -226,6 +227,64 @@ namespace CoworkingBooking.Infraestructure
             DeleteResult deleteResult = await _collection.DeleteManyAsync(filter);
 
             return deleteResult.DeletedCount;
+        }
+
+        public async Task<List<WorkspaceCalendarEntity>> FindMany<TField>(
+            Expression<Func<WorkspaceCalendarEntity, TField>> field, 
+            TField value, 
+            CancellationToken cancellationToken = default)
+        {
+            var fieldName = ((MemberExpression)field.Body).Member.Name;
+
+            var filter = Builders<WorkspaceCalendarModel>.Filter.Eq(fieldName, value)
+                & Builders<WorkspaceCalendarModel>.Filter.Eq(wc => wc.IsInactive, false);
+
+            var findOptions = new FindOptions
+            {
+                AllowDiskUse = true,
+            };
+
+            var result = await _collection.Find(filter, findOptions).ToListAsync(cancellationToken);
+
+            return result.Select(workspaceCalendarPersistenceMapper.ToEntity).ToList();
+        }
+
+        public async Task<CursorPaginationRecordResponse<WorkspaceCalendarEntity>> CursorPagination<TField>(
+            Expression<Func<WorkspaceCalendarEntity, TField>> field, 
+            TField value, 
+            string? cursor, 
+            int limit = 10, 
+            CancellationToken cancellationToken = default
+        )
+        {
+            var fieldName = ((MemberExpression)field.Body).Member.Name;
+
+            var filter = Builders<WorkspaceCalendarModel>.Filter.Eq(fieldName, value)
+                & Builders<WorkspaceCalendarModel>.Filter.Eq(wc => wc.IsInactive, false);
+
+            if (cursor is not null)
+            {
+                filter = filter 
+                    & Builders<WorkspaceCalendarModel>.Filter.Gte(wc => wc.Id, cursor);
+            }
+
+            var result = await _collection
+                .Find(filter)
+                .SortBy(wc => wc.Id)
+                .Limit(limit + 1)
+                .ToListAsync(cancellationToken);
+
+            var rows = result.Select(workspaceCalendarPersistenceMapper.ToEntity).ToList();
+
+            var hasMore = result.Count > limit;
+            var data = hasMore ? rows.Slice(0, limit) : rows;
+            var nextCursor = hasMore ? rows.Last().Id : null;
+
+            return new CursorPaginationRecordResponse<WorkspaceCalendarEntity>(
+                nextCursor,
+                limit,
+                data
+            );
         }
     }
 }
