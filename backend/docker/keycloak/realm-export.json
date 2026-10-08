@@ -1,0 +1,73 @@
+{
+    "realm": "coworking-booking",
+    "enabled": true,
+    "displayName": "CoworkingBooking",
+    "registrationAllowed": false,
+    "loginWithEmailAllowed": true,
+    "duplicateEmailsAllowed": false,
+    "resetPasswordAllowed": true,
+    "roles": {
+        "realm": [
+            {
+                "name": "user",
+                "description": "Default user role"
+            },
+            {
+                "name": "admin",
+                "description": "Administrator"
+            }
+        ]
+    },
+    "clients": [
+        {
+            "clientId": "coworking-booking-api",
+            "name": "Coworking Booking API",
+            "enabled": true,
+            "protocol": "openid-connect",
+            "publicClient": true,
+            "bearerOnly": false,
+            "standardFlowEnabled": false,
+            "implicitFlowEnabled": false,
+            "directAccessGrantsEnabled": true
+        }
+    ],
+    "users": [
+        {
+            "username": "admin",
+            "enabled": true,
+            "email": "admin@example.com",
+            "emailVerified": true,
+            "firstName": "Admin",
+            "lastName": "User",
+            "credentials": [
+                {
+                    "type": "password",
+                    "value": "admin123",
+                    "temporary": false
+                }
+            ],
+            "realmRoles": [
+                "admin",
+                "user"
+            ]
+        },
+        {
+            "username": "john",
+            "enabled": true,
+            "email": "john@example.com",
+            "emailVerified": true,
+            "firstName": "John",
+            "lastName": "Doe",
+            "credentials": [
+                {
+                    "type": "password",
+                    "value": "123456",
+                    "temporary": false
+                }
+            ],
+            "realmRoles": [
+                "user"
+            ]
+        }
+    ]
+}
