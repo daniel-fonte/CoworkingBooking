@@ -18,6 +18,44 @@
             }
         ]
     },
+    "clientScopes": [
+        {
+            "name": "coworking-booking-api-audience",
+            "description": "Adds the API audience to access tokens",
+            "protocol": "openid-connect",
+            "attributes": {
+                "include.in.token.scope": "true",
+                "display.on.consent.screen": "false"
+            },
+            "protocolMappers": [
+                {
+                    "name": "coworking-booking-api-audience-mapper",
+                    "protocol": "openid-connect",
+                    "protocolMapper": "oidc-audience-mapper",
+                    "consentRequired": false,
+                    "config": {
+                        "included.client.audience": "coworking-booking-api",
+                        "id.token.claim": "false",
+                        "access.token.claim": "true",
+                        "introspection.token.claim": "true"
+                    }
+                },
+                {
+                    "name": "realm roles",
+                    "protocol": "openid-connect",
+                    "protocolMapper": "oidc-usermodel-realm-role-mapper",
+                    "consentRequired": false,
+                    "config": {
+                        "user.attribute": "foo",
+                        "access.token.claim": "true",
+                        "claim.name": "realm_access.roles",
+                        "jsonType.label": "String",
+                        "multivalued": "true"
+                    }
+                }
+            ]
+        }
+    ],
     "clients": [
         {
             "clientId": "coworking-booking-api",
@@ -28,7 +66,15 @@
             "bearerOnly": false,
             "standardFlowEnabled": false,
             "implicitFlowEnabled": false,
-            "directAccessGrantsEnabled": true
+            "directAccessGrantsEnabled": true,
+            "defaultClientScopes": [
+                "web-origins",
+                "acr",
+                "roles",
+                "profile",
+                "email",
+                "coworking-booking-api-audience"
+            ]
         }
     ],
     "users": [

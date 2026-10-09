@@ -2,6 +2,8 @@ using CoworkingBooking.Api.Classes;
 using CoworkingBooking.Application.Workspace.Dtos;
 using CoworkingBooking.Application.Workspace.UseCases;
 using CoworkingBooking.Shared.Classes;
+using CoworkingBooking.Shared.Enums;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CoworkingBooking.Api.Controllers
@@ -28,6 +30,7 @@ namespace CoworkingBooking.Api.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = Roles.Admin)]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -43,6 +46,7 @@ namespace CoworkingBooking.Api.Controllers
         }
 
         [HttpGet("{slug}")]
+        [Authorize(Roles = $"{Roles.Admin}, {Roles.User}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -55,6 +59,7 @@ namespace CoworkingBooking.Api.Controllers
         }
     
         [HttpPatch("{slug}/availability")]
+        [Authorize(Roles = Roles.Admin)]
         public async Task<ActionResult<ApiResponse<UpdateWorkspaceAvailabilityResponseDTO>>> UpdateWorkspaceAvailability(
             [FromRoute] string slug,
             [FromBody] UpdateWorkspaceAvailabilityRequestDTO request
@@ -65,6 +70,7 @@ namespace CoworkingBooking.Api.Controllers
         }
 
         [HttpPatch("{slug}/status")]
+        [Authorize(Roles = Roles.Admin)]
         public async Task<ActionResult<ApiResponse<UpdateWorkspaceStatusResponseDTO>>> UpdateWorkspaceStatus(
             [FromRoute] string slug,
             [FromBody] UpdateWorkspaceStatusRequestDTO request

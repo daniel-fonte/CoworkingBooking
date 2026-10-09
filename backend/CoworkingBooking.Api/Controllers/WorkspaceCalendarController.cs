@@ -2,7 +2,9 @@ using CoworkingBooking.Api.Classes;
 using CoworkingBooking.Application.WorkspaceCalendar.Dtos;
 using CoworkingBooking.Application.WorkspaceCalendar.UseCases;
 using CoworkingBooking.Shared.Classes;
+using CoworkingBooking.Shared.Enums;
 using CoworkingBooking.Shared.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CoworkingBooking.Api.Controllers
@@ -24,6 +26,7 @@ namespace CoworkingBooking.Api.Controllers
         }
 
         [HttpPost("{calendarId}/booking")]
+        [Authorize(Roles = Roles.Admin)]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -35,13 +38,13 @@ namespace CoworkingBooking.Api.Controllers
             [FromBody] CreateWorkspaceCalendarBookingRequestDTO body
         )
         {
-
             var result = await createWorkspaceCalendarBookingUsaCase.Execute((calendarId, body));
 
             return ResultsExtension.ToActionResult(result, data => CreatedAtAction(nameof(CreateBooking), new { calendarId = calendarId }, data));
         }
 
         [HttpGet("{workspaceId}")]
+        [Authorize(Roles = $"{Roles.Admin}, {Roles.User}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]

@@ -26,6 +26,9 @@ namespace CoworkingBooking.Api.Extensions
 
             app.UseHangfireDashboard("/jobs");
 
+            app.UseAuthentication();
+            app.UseAuthorization();
+
             return app;
         }
     }

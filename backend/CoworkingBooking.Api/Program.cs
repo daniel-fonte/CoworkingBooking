@@ -28,6 +28,8 @@ try
 
     builder.Services.AddApplicationServices();
 
+    builder.Services.AddAuthenticationServices(builder.Configuration);
+
     var app = builder.Build();
 
     await app.InitializeApplicationAsync();
