@@ -143,13 +143,15 @@ namespace CoworkingBooking.Core.WorkspaceCalendar.Entities
         public DateTime StartAt { get; private set; }
         public DateTime EndAt { get; private set; }
         public double TotalPrice { get; private set; }
+        public Guid? UserId { get; private set; }
         public DateTime CreatedAt { get; private set; } = default;
         public DateTime UpdatedAt { get; private set; } = default;
 
-        public WorkspaceCalendarBooking(DateTime startAt, DateTime endAt)
+        public WorkspaceCalendarBooking(DateTime startAt, DateTime endAt, Guid? userId)
         {
             StartAt = NormalizeDate(startAt);
             EndAt = NormalizeDate(endAt);
+            UserId = userId;
             CreatedAt = DateTime.UtcNow.ToUniversalTime();
             UpdatedAt = DateTime.UtcNow.ToUniversalTime();
 
@@ -162,12 +164,13 @@ namespace CoworkingBooking.Core.WorkspaceCalendar.Entities
         public static WorkspaceCalendarBooking Rehydrate(
             DateTime startAt,
             DateTime endAt,
+            Guid? userId,
             double totalPrice,
             DateTime createdAt,
             DateTime updatedAt
         )
         {
-            var entity = new WorkspaceCalendarBooking(startAt, endAt)
+            var entity = new WorkspaceCalendarBooking(startAt, endAt, userId)
             {
                 TotalPrice = totalPrice,
                 CreatedAt = createdAt,

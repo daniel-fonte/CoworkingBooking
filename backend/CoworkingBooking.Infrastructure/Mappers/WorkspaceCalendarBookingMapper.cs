@@ -12,6 +12,7 @@ namespace CoworkingBooking.Infraestructure.Mappers
                 StartAt = entity.StartAt,
                 EndAt = entity.EndAt,
                 TotalPrice = entity.TotalPrice,
+                UserId = entity.UserId,
                 CreatedAt = entity.CreatedAt,
                 UpdatedAt = entity.UpdatedAt
             };
@@ -22,6 +23,7 @@ namespace CoworkingBooking.Infraestructure.Mappers
             return WorkspaceCalendarBooking.Rehydrate(
                 startAt: model.StartAt,
                 endAt: model.EndAt,
+                model.UserId,
                 totalPrice: model.TotalPrice,
                 createdAt: model.CreatedAt,
                 updatedAt: model.UpdatedAt

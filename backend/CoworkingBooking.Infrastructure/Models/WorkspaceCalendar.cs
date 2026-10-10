@@ -66,6 +66,10 @@ namespace CoworkingBooking.Infraestructure.Models
         [BsonRepresentation(BsonType.Double)]
         public double TotalPrice { get; set; }
 
+        [BsonElement("userId")]
+        [BsonGuidRepresentation(GuidRepresentation.Standard)]
+        public Guid? UserId { get; set; }
+
         [BsonElement("createdAt")]
         [BsonRepresentation(BsonType.DateTime)]
         [BsonDateTimeOptions(Kind = DateTimeKind.Utc)]

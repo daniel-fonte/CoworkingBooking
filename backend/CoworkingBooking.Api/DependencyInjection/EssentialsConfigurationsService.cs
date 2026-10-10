@@ -25,9 +25,7 @@ namespace CoworkingBooking.Api.DependencyInjection
                 options.SuppressModelStateInvalidFilter = true;
             });
             
-            BsonSerializer.RegisterSerializer(
-                new EnumSerializer<DayOfWeek>(BsonType.String)
-            );
+            MongoConfigurationsService.AddMongoConfigurationsService();
 
             services.AddSerilog((services, lc) => lc
                 .ReadFrom.Configuration(configuration)
@@ -56,6 +54,8 @@ namespace CoworkingBooking.Api.DependencyInjection
 
             services.AddDefaultAWSOptions(configuration.GetAWSOptions());
             services.AddAWSService<IAmazonSQS>();
+            
+            services.AddHttpContextAccessor();
 
             return services;
         }

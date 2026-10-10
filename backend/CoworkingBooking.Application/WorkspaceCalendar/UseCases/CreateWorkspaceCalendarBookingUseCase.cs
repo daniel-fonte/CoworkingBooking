@@ -1,4 +1,5 @@
 using CoworkingBooking.Application.Interfaces;
+using CoworkingBooking.Application.Providers;
 using CoworkingBooking.Application.WorkspaceCalendar.Dtos;
 using CoworkingBooking.Application.WorkspaceCalendar.Mappers;
 using CoworkingBooking.Application.WorkspaceCalendar.Ports;
@@ -16,13 +17,15 @@ namespace CoworkingBooking.Application.WorkspaceCalendar.UseCases
         private readonly IWorkspaceExistenceCheckerPort workspaceExistenceCheckerPort;
         private readonly IValidator<CreateWorkspaceCalendarBookingRequestDTO> validator;
         private readonly WorkspaceCalendarBookingMapper workspaceCalendarBookingMapper;
+        private readonly ICurrentUserService currentUserService;
         
         public CreateWorkspaceCalendarBookingUseCase(
             IWorkspaceCalendarRepository workspaceCalendarRepository,
             ILogger<CreateWorkspaceCalendarBookingUseCase> logger,
             IWorkspaceExistenceCheckerPort workspaceExistenceCheckerPort,
             IValidator<CreateWorkspaceCalendarBookingRequestDTO> validator,
-            WorkspaceCalendarBookingMapper workspaceCalendarBookingMapper
+            WorkspaceCalendarBookingMapper workspaceCalendarBookingMapper,
+            ICurrentUserService currentUserService
         )
         {
             this.workspaceCalendarRepository = workspaceCalendarRepository;
@@ -30,6 +33,7 @@ namespace CoworkingBooking.Application.WorkspaceCalendar.UseCases
             this.workspaceExistenceCheckerPort = workspaceExistenceCheckerPort;
             this.validator = validator;
             this.workspaceCalendarBookingMapper = workspaceCalendarBookingMapper;
+            this.currentUserService = currentUserService;
         }
 
         public async Task<Result<CreateWorkspaceCalendarBookingResponseDTO>> Execute((string id, CreateWorkspaceCalendarBookingRequestDTO request) input)
@@ -55,10 +59,13 @@ namespace CoworkingBooking.Application.WorkspaceCalendar.UseCases
                     return Result<CreateWorkspaceCalendarBookingResponseDTO>.Failure([new Error($"Workspace Calendar {id} not found", ErrorType.NotFound)]);
                 }
 
-                if (!workspaceCalendarFound.IsAvailable())
+                if (workspaceCalendarFound.HasBooking())
                 {
-                    logger.LogWarning("Workspace Calendar {Id} is fulled", workspaceCalendarFound.Id);
-                    return Result<CreateWorkspaceCalendarBookingResponseDTO>.Failure([new Error($"Workspace Calendar {workspaceCalendarFound.Id} is fulled", ErrorType.ValidationError)]);
+                    if (!workspaceCalendarFound.IsAvailable())
+                    {
+                        logger.LogWarning("Workspace Calendar {Id} is fulled", workspaceCalendarFound.Id);
+                        return Result<CreateWorkspaceCalendarBookingResponseDTO>.Failure([new Error($"Workspace Calendar {workspaceCalendarFound.Id} is fulled", ErrorType.ValidationError)]);
+                    }
                 }
 
                 var workspaceExists = await workspaceExistenceCheckerPort.Execute(workspaceCalendarFound.WorkspaceId);
@@ -70,7 +77,17 @@ namespace CoworkingBooking.Application.WorkspaceCalendar.UseCases
                         .Failure(new List<Error> { new Error($"Workspace {workspaceCalendarFound.WorkspaceId} not found", ErrorType.NotFound)});
                 }
 
-                var workspaceCalendarBooking = workspaceCalendarBookingMapper.ToEntity(request);
+                var userId = currentUserService.GetUserId();
+
+                if (userId == null)
+                {
+                    logger.LogWarning("User Id null");
+                    return Result<CreateWorkspaceCalendarBookingResponseDTO>.Failure([new Error("User Id null", ErrorType.InternalServerError)]);
+                }
+
+                var requestWithUser = request with { UserId = new Guid(userId) };
+
+                var workspaceCalendarBooking = workspaceCalendarBookingMapper.ToEntity(requestWithUser);
                 
                 workspaceCalendarBooking.CalculateTotalPrice(workspaceExists.PricePerHour);
 

@@ -1,4 +1,7 @@
 using CoworkingBooking.Api.Classes;
+using CoworkingBooking.Api.Providers;
+using CoworkingBooking.Application;
+using CoworkingBooking.Application.Providers;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 
@@ -26,6 +29,8 @@ namespace CoworkingBooking.Api.DependencyInjection
             services.AddAuthorization();
 
             services.AddTransient<IClaimsTransformation, KeycloakClaimsTransformation>();
+
+            services.AddSingleton<ICurrentUserService, CurrentUserSerivce>();
 
             return services;
         }

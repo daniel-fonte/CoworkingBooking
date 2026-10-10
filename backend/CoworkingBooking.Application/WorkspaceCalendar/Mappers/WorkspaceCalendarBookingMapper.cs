@@ -8,7 +8,7 @@ namespace CoworkingBooking.Application.WorkspaceCalendar.Mappers
     {
         public WorkspaceCalendarBooking ToEntity(CreateWorkspaceCalendarBookingRequestDTO dto)
         {
-            return new WorkspaceCalendarBooking(DateTime.Parse(dto.StartAt), DateTime.Parse(dto.EndAt));
+            return new WorkspaceCalendarBooking(DateTime.Parse(dto.StartAt), DateTime.Parse(dto.EndAt), dto.UserId);
         }
 
         public CreateWorkspaceCalendarBookingResponseDTO ToCreateResponseDTO(WorkspaceCalendarBooking workspaceEntity)
