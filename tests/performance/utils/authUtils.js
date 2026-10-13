@@ -5,12 +5,12 @@ const auth = () => {
 
     const headers = { 'Content-Type': 'application/x-www-form-urlencoded' };
 
-    const payload = JSON.stringify({
+    const payload = {
         grant_type: "password",
         client_id: "coworking-booking-api",
         username: "admin",
         password: "admin123"
-    });
+    };
 
     const response = http.post(`${baseUrl}/realms/coworking-booking/protocol/openid-connect/token`, payload, { headers });
 

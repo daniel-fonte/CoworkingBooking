@@ -12,6 +12,17 @@ Toda a infraestrutura local é definida em `backend/docker-compose.yml`.
 | `localstack` | `localstack/localstack` | 4566 | Emulação do AWS SQS (`SERVICES=sqs`, região `us-east-1`, persistência habilitada). |
 | `sqs-admin` | `pacovk/sqs-admin` | 3999 | Interface web para inspecionar as filas. |
 | `seq` | `datalust/seq` | 5341 (ingestão), 8081 (UI) | Agregação e busca de logs estruturados. |
+| `keycloak-db` | `postgres:18.6` | 5432 | Banco PostgreSQL usado pelo Keycloak. |
+| `keycloak` | `quay.io/keycloak/keycloak:26.8.0` | 7080 (HTTP), 7443 (HTTPS), 9000 (health) | Provedor de identidade; importa o realm local `coworking-booking` na inicialização. |
+
+### Autenticação
+
+- Console do Keycloak: `http://localhost:7080`; usuário administrativo local: `admin` / `admin`.
+- A API valida access tokens JWT usando `Keycloak:Authority` (`http://localhost:7080/realms/coworking-booking`) e `Keycloak:Audience` (`coworking-booking-api`), configurados em `CoworkingBooking.Api/appsettings.Development.json`.
+- O realm define as roles `user` e `admin`. O client público `coworking-booking-api` tem o fluxo Direct Access Grants habilitado para obter tokens durante o desenvolvimento.
+- O realm exportado inclui usuários de demonstração `john` (`123456`, role `user`) e `admin` (`admin123`, roles `user` e `admin`). Use essas credenciais somente no ambiente local.
+- A transformação de claims da API lê `realm_access.roles` do JWT e as converte em roles do ASP.NET Core. As permissões por endpoint estão listadas em [api.md](api.md#autenticação).
+- O realm e o banco são apenas para desenvolvimento local; configure credenciais próprias e HTTPS antes de expor os serviços fora da máquina.
 
 ### MongoDB
 
@@ -43,6 +54,8 @@ Configurações por ambiente ficam em `appsettings.Development.json` de `Coworki
 | `AWS:Region` | Região AWS (`us-east-1`). |
 | `AWS:ServiceURL` | Endpoint do SQS; localmente `http://localhost:4566` (LocalStack). |
 | `AWS:Profile`, `AWS:AccessKey`, `AWS:SecretKey` | Credenciais AWS. |
+| `Keycloak:Authority` | Emissor do JWT; URL do realm Keycloak. |
+| `Keycloak:Audience` | Audience esperada no access token (`coworking-booking-api`). |
 
 ## Execução
 
@@ -74,3 +87,7 @@ Os Dockerfiles usam build multi-stage (`sdk:10.0` para build) e devem ser execut
   - `/health/live`: indica que o processo está no ar, sem checar dependências.
   - `/health/ready`: verifica conectividade com MongoDB e Redis.
 - **Jobs**: dashboard do Hangfire em `/jobs`.
+
+## Teste de desempenho
+
+O cenário de concorrência de reservas usa [k6](performance.md). Ele exige a infraestrutura local, a API em execução e um slot de calendário válido configurado no script. Consulte o guia para instalação e execução.

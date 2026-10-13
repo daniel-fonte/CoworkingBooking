@@ -19,6 +19,7 @@ API de reservas para espaços de **coworking**, construída como projeto de port
 | Persistência | MongoDB 8 (replica set `rs0`, transações) |
 | Cache e locks | Redis |
 | Mensageria | AWS SQS (LocalStack em ambiente local) |
+| Autenticação | Keycloak (JWT) + PostgreSQL |
 | Jobs agendados | Hangfire (storage em Redis) |
 | Observabilidade | Serilog + Seq, health checks |
 | Validação | FluentValidation |
@@ -47,10 +48,8 @@ backend/
 ├── CoworkingBooking.Shared             # Result/Error, ApiResponse, GeoJson, utilitários
 ├── CoworkingBooking.Workers            # Consumidores SQS (BackgroundService)
 ├── CoworkingBooking.Application.Tests  # Testes unitários dos casos de uso
-└── docker-compose.yml                  # Infra local
+└── docker-compose.yml                  # Infra local: MongoDB, Redis, LocalStack, Seq e Keycloak
 ```
-
-Detalhes em [docs/architecture.md](docs/architecture.md).
 
 ## Como rodar localmente
 
@@ -70,7 +69,7 @@ openssl rand -base64 756 > backend/docker/mongo-keyfile
 
 ### 2. Subir a infraestrutura
 
-Sobe MongoDB (3 nós), Redis, Seq, LocalStack (SQS) e as ferramentas de administração. As filas SQS são criadas automaticamente pelo script `docker/localstack/init-aws.sh`.
+Sobe MongoDB (3 nós), Redis, Seq, LocalStack (SQS), Keycloak com PostgreSQL e as ferramentas de administração. O realm `coworking-booking` é importado na inicialização do Keycloak, e as filas SQS são criadas automaticamente pelo script `docker/localstack/init-aws.sh`.
 
 ```bash
 cd backend
@@ -111,6 +110,7 @@ docker build -f CoworkingBooking.Workers/Dockerfile -t cwb-workers .
 | Seq (logs) | http://localhost:8081 |
 | SQS Admin | http://localhost:3999 |
 | Redis Insight | http://localhost:5540 |
+| Keycloak | http://localhost:7080 (realm `coworking-booking`) |
 
 Scalar e OpenAPI ficam disponíveis apenas no ambiente `Development`.
 
@@ -121,9 +121,12 @@ cd backend
 dotnet test
 ```
 
+O teste de desempenho de concorrência usa k6 e está documentado em [docs/performance.md](docs/performance.md).
+
 ## Documentação
 
 - [Arquitetura](docs/architecture.md): camadas, padrões, fluxos assíncronos, cache e jobs.
 - [Domínio](docs/domain.md): entidades, regras de negócio, enums e modelo de dados.
 - [API](docs/api.md): endpoints com exemplos de requisição e resposta.
 - [Infraestrutura](docs/infrastructure.md): serviços Docker, filas, configuração.
+- [Teste de desempenho](docs/performance.md): requisitos e execução do cenário de concorrência com k6.

@@ -47,18 +47,43 @@ Indisponibilidade do Redis retorna **503** com `Retry-After: 10`.
 
 Valores possíveis dos enums em [domain.md](domain.md#enums).
 
+## Autenticação
+
+Os endpoints de negócio exigem um access token JWT emitido pelo realm `coworking-booking` no Keycloak local (`http://localhost:7080`). Envie-o no header `Authorization: Bearer <access_token>`. A API valida o emissor e a audience `coworking-booking-api`.
+
+Para obter um token de desenvolvimento com o usuário de demonstração `john`:
+
+```bash
+curl -X POST http://localhost:7080/realms/coworking-booking/protocol/openid-connect/token \
+  -H "Content-Type: application/x-www-form-urlencoded" \
+  -d "client_id=coworking-booking-api" \
+  -d "grant_type=password" \
+  -d "username=john" \
+  -d "password=123456"
+```
+
+Use o valor `access_token` da resposta nas chamadas à API. O realm também fornece `admin` / `admin123`, com roles `admin` e `user`; essas são credenciais locais de demonstração.
+
+| Role | Permissões |
+|---|---|
+| `user` | Consultar workspace por slug e consultar recorrências do calendário. |
+| `admin` | Criar workspace, alterar disponibilidade e status, criar reserva e consultar. |
+
+Sem token válido, a API responde `401 Unauthorized`; com token válido sem a role exigida, responde `403 Forbidden`. Os endpoints de health check, documentação OpenAPI/Scalar (em `Development`) e dashboard Hangfire não têm atributo `[Authorize]` nos controllers/pipeline atuais.
+
 ## Endpoints
 
-| Método | Rota | Descrição |
-|---|---|---|
-| `POST` | `/api/workspace` | Cria um workspace |
-| `GET` | `/api/workspace/{slug}` | Detalhes de um workspace |
-| `PATCH` | `/api/workspace/{slug}/availability` | Define a disponibilidade recorrente |
-| `PATCH` | `/api/workspace/{slug}/status` | Altera o status |
-| `POST` | `/api/workspaceCalendar/{calendarId}/booking` | Cria uma reserva em um slot de calendário |
-| `GET` | `/health/live` | Liveness (sem dependências) |
-| `GET` | `/health/ready` | Readiness (verifica MongoDB e Redis) |
-| `GET` | `/jobs` | Dashboard do Hangfire |
+| Método | Rota | Acesso | Descrição |
+|---|---|---|---|
+| `POST` | `/api/workspace` | `admin` | Cria um workspace |
+| `GET` | `/api/workspace/{slug}` | `user` ou `admin` | Detalhes de um workspace |
+| `PATCH` | `/api/workspace/{slug}/availability` | `admin` | Define a disponibilidade recorrente |
+| `PATCH` | `/api/workspace/{slug}/status` | `admin` | Altera o status |
+| `POST` | `/api/workspaceCalendar/{calendarId}/booking` | `admin` | Cria uma reserva em um slot de calendário |
+| `GET` | `/api/workspaceCalendar/{workspaceId}` | `user` ou `admin` | Lista recorrências do calendário |
+| `GET` | `/health/live` | Público | Liveness (sem dependências) |
+| `GET` | `/health/ready` | Público | Readiness (verifica MongoDB e Redis) |
+| `GET` | `/jobs` | Local | Dashboard do Hangfire (restrito a requisições locais pela configuração padrão) |
 
 ---
 
@@ -207,3 +232,5 @@ Cria uma reserva dentro de um slot de calendário. O intervalo deve estar dentro
 `totalPrice` = horas reservadas × `pricePerHour` do workspace.
 
 Erros: `400` em validação, sobreposição de reservas ou slot cheio; `404` se o slot, o workspace ou a disponibilidade do workspace não existir.
+
+O cenário k6 que disputa simultaneamente a criação de uma reserva usa este endpoint; veja [como executar o teste de desempenho](performance.md).
