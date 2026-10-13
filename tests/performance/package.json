@@ -1,0 +1,12 @@
+{
+  "name": "performance",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/k6": "^2.3.0"
+  },
+  "scripts": {
+    "dev": "k6 run -e AUTH_BASE_URL=http://localhost:7080 -e API_BASE_URL=http://localhost:5058 --http-debug index.js"
+  }
+}

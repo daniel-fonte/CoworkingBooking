@@ -1,0 +1,36 @@
+# Environment variables and secrets
+.env
+.env.*
+!.env.example
+
+# Dependencies
+node_modules/
+
+# Test results and reports
+results/
+reports/
+output/
+summary.json
+summary.html
+k6-results.*
+*.junit.xml
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.swp
+*.swo
+
+# IDEs and OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+Desktop.ini
