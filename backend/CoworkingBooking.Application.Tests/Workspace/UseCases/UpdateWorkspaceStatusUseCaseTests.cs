@@ -18,7 +18,7 @@ namespace CoworkingBooking.Application.Tests.Workspace.UseCases
             NullLogger<UpdateWorkspaceStatusUseCase>.Instance,
             new UpdateWorkspaceStatusValidator(),
             workspaceRepository,
-            new WorkspaceMapper()
+            new WorkspaceMapper(new WorkspaceAvailabilityMapper( new WorkspaceAvailabilityRecurrenceMapper()))
         );
 
         [Test]

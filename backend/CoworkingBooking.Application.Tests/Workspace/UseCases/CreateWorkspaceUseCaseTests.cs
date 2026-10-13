@@ -19,7 +19,7 @@ namespace CoworkingBooking.Application.Tests.Workspace.UseCases
             NullLogger<CreateWorkspaceUseCase>.Instance,
             workspaceRepository,
             new CreateWorkspaceValidator(),
-            new WorkspaceMapper()
+            new WorkspaceMapper(new WorkspaceAvailabilityMapper( new WorkspaceAvailabilityRecurrenceMapper()))
         );
 
         private static CreateWorkspaceRequestDTO BuildRequest() => new(

@@ -1,3 +1,4 @@
+using CoworkingBooking.Application.Providers;
 using CoworkingBooking.Application.Tests.TestData;
 using CoworkingBooking.Application.WorkspaceCalendar.Dtos;
 using CoworkingBooking.Application.WorkspaceCalendar.Mappers;
@@ -16,13 +17,15 @@ namespace CoworkingBooking.Application.Tests.WorkspaceCalendar.UseCases
     {
         private static CreateWorkspaceCalendarBookingUseCase CreateUseCase(
             IWorkspaceCalendarRepository workspaceCalendarRepository,
-            IWorkspaceExistenceCheckerPort workspaceExistenceChecker
+            IWorkspaceExistenceCheckerPort workspaceExistenceChecker,
+            ICurrentUserService currentUserService
         ) => new(
             workspaceCalendarRepository,
             NullLogger<CreateWorkspaceCalendarBookingUseCase>.Instance,
             workspaceExistenceChecker,
             new CreateWorkspaceCalendarBookingValidator(),
-            new WorkspaceCalendarBookingMapper()
+            new WorkspaceCalendarBookingMapper(),
+            currentUserService
         );
 
         [Test]
@@ -32,10 +35,13 @@ namespace CoworkingBooking.Application.Tests.WorkspaceCalendar.UseCases
             var workspaceId = WorkspaceFactory.NewId();
             var workspaceCalendarRepository = new Mock<IWorkspaceCalendarRepository>();
             var workspaceExistenceChecker = new Mock<IWorkspaceExistenceCheckerPort>();
-            var useCase = CreateUseCase(workspaceCalendarRepository.Object, workspaceExistenceChecker.Object);
+            var currentUserService = new Mock<ICurrentUserService>();
+
+            var useCase = CreateUseCase(workspaceCalendarRepository.Object, workspaceExistenceChecker.Object, currentUserService.Object);
+            var currenteUserId = new Guid();
 
             var day = new DateTime(2026, 1, 5, 0, 0, 0, DateTimeKind.Utc);
-            var existingBooking = new WorkspaceCalendarBooking(day.AddHours(8), day.AddHours(9));
+            var existingBooking = new WorkspaceCalendarBooking(day.AddHours(8), day.AddHours(9), null);
             var calendar = WorkspaceCalendarEntity.Rehydrate(
                 id: calendarId,
                 workspaceId: workspaceId,
@@ -45,25 +51,34 @@ namespace CoworkingBooking.Application.Tests.WorkspaceCalendar.UseCases
                 isFull: false,
                 isInactive: false,
                 createdAt: day,
-                updatedAt: day
+                updatedAt: day,
+                version: 0
             );
 
-            workspaceCalendarRepository.Setup(r => r.FindOneById(calendarId)).ReturnsAsync(calendar);
+            workspaceCalendarRepository
+                .Setup(r => r.FindOneById(calendarId))
+                .ReturnsAsync(calendar);
+
             workspaceExistenceChecker
                 .Setup(w => w.Execute(workspaceId))
                 .ReturnsAsync(WorkspaceFactory.Create(workspaceId, pricePerHour: 50, availability: WorkspaceFactory.CreateDailyAvailability()));
-            workspaceCalendarRepository
-                .Setup(r => r.UpdateBooking(calendarId, It.IsAny<List<WorkspaceCalendarBooking>>()))
-                .ReturnsAsync((string _, List<WorkspaceCalendarBooking> bookings) => bookings.Last());
 
-            var request = new CreateWorkspaceCalendarBookingRequestDTO("2026-01-05T10:00:00Z", "2026-01-05T12:00:00Z");
+            workspaceCalendarRepository
+                .Setup(r => r.UpdateBooking(calendarId, 0, It.IsAny<List<WorkspaceCalendarBooking>>()))
+                .ReturnsAsync((string _, int _, List<WorkspaceCalendarBooking> bookings) => bookings.Last());
+
+            currentUserService
+                .Setup(w => w.GetUserId())
+                .Returns(currenteUserId.ToString());
+
+            var request = new CreateWorkspaceCalendarBookingRequestDTO("2026-01-05T10:00:00Z", "2026-01-05T12:00:00Z", null);
 
             var result = await useCase.Execute((calendarId, request));
 
             Assert.That(result.IsSuccess, Is.True);
             Assert.That(result.Data!.TotalPrice, Is.EqualTo(100));
             workspaceCalendarRepository.Verify(
-                r => r.UpdateBooking(calendarId, It.Is<List<WorkspaceCalendarBooking>>(b => b.Count == 2)),
+                r => r.UpdateBooking(calendarId, 0, It.Is<List<WorkspaceCalendarBooking>>(b => b.Count == 2)),
                 Times.Once
             );
             workspaceCalendarRepository.Verify(r => r.UpdateAvailability(calendarId, false), Times.Once);
@@ -75,13 +90,20 @@ namespace CoworkingBooking.Application.Tests.WorkspaceCalendar.UseCases
             var calendarId = WorkspaceFactory.NewId();
             var workspaceCalendarRepository = new Mock<IWorkspaceCalendarRepository>();
             var workspaceExistenceChecker = new Mock<IWorkspaceExistenceCheckerPort>();
-            var useCase = CreateUseCase(workspaceCalendarRepository.Object, workspaceExistenceChecker.Object);
+            var currentUserService = new Mock<ICurrentUserService>();
+            var currenteUserId = new Guid();
+
+            var useCase = CreateUseCase(workspaceCalendarRepository.Object, workspaceExistenceChecker.Object, currentUserService.Object);
 
             workspaceCalendarRepository
                 .Setup(r => r.FindOneById(It.IsAny<string>()))
                 .ReturnsAsync((WorkspaceCalendarEntity?)null);
 
-            var request = new CreateWorkspaceCalendarBookingRequestDTO("2026-01-05T10:00:00Z", "2026-01-05T12:00:00Z");
+            currentUserService
+                .Setup(w => w.GetUserId())
+                .Returns(currenteUserId.ToString());
+
+            var request = new CreateWorkspaceCalendarBookingRequestDTO("2026-01-05T10:00:00Z", "2026-01-05T12:00:00Z", null);
 
             var result = await useCase.Execute((calendarId, request));
 

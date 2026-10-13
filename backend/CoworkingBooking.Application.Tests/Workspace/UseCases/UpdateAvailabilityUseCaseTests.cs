@@ -1,4 +1,5 @@
 using CoworkingBooking.Application.Tests.TestData;
+using CoworkingBooking.Application.Workspace.Cache;
 using CoworkingBooking.Application.Workspace.Dtos;
 using CoworkingBooking.Application.Workspace.Mappers;
 using CoworkingBooking.Application.Workspace.Ports;
@@ -11,6 +12,7 @@ using CoworkingBooking.Core.Workspace.Repositories;
 using CoworkingBooking.Core.WorkspaceCalendar.Entities;
 using CoworkingBooking.Shared.Classes;
 using CoworkingBooking.Shared.Enums;
+using CoworkingBooking.Shared.Interfaces;
 using CoworkingBooking.Shared.Publishers;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -24,6 +26,7 @@ namespace CoworkingBooking.Application.Tests.Workspace.UseCases
         {
             var workspaceId = WorkspaceFactory.NewId();
             var workspaceRepository = new Mock<IWorkspaceRepository>();
+            var cacheRepository = new Mock<ICacheRepository<WorkspaceAvailabilityCache, WorkspaceAvailabilityCache>>();
             var publisher = new Mock<IUpdateWorkspaceAvailabilityPublisher>();
             var calendarExistenceChecker = new Mock<IWorkspaceCalendarExistenceCheckerPort>();
             var recurrenceMapper = new WorkspaceAvailabilityRecurrenceMapper();
@@ -31,12 +34,13 @@ namespace CoworkingBooking.Application.Tests.Workspace.UseCases
             var useCase = new UpdateAvailabilityUseCase(
                 workspaceRepository.Object,
                 new UpdateWorkspaceAvailabilityValidator(),
-                new WorkspaceMapper(),
+                new WorkspaceMapper(new WorkspaceAvailabilityMapper( new WorkspaceAvailabilityRecurrenceMapper())),
                 new WorkspaceAvailabilityMapper(recurrenceMapper),
                 recurrenceMapper,
                 NullLogger<UpdateAvailabilityUseCase>.Instance,
                 publisher.Object,
-                calendarExistenceChecker.Object
+                calendarExistenceChecker.Object,
+                cacheRepository.Object
             );
 
             var request = new UpdateWorkspaceAvailabilityRequestDTO(

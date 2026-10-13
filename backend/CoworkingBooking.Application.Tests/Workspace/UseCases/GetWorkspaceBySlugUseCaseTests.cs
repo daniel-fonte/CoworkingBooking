@@ -16,7 +16,7 @@ namespace CoworkingBooking.Application.Tests.Workspace.UseCases
         private static GetWorkspaceBySlugUseCase CreateUseCase(ICacheRepository<WorkspaceEntity, WorkspaceCache> cacheRepository) => new(
             new Mock<IWorkspaceRepository>().Object,
             cacheRepository,
-            new WorkspaceMapper(),
+            new WorkspaceMapper(new WorkspaceAvailabilityMapper( new WorkspaceAvailabilityRecurrenceMapper())),
             NullLogger<GetWorkspaceBySlugUseCase>.Instance
         );
 
