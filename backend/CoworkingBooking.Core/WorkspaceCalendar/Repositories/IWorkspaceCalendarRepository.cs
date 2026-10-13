@@ -8,7 +8,7 @@ namespace CoworkingBooking.Core.WorkspaceCalendar.Repositories
     {
         Task<List<WorkspaceCalendarEntity>> FindByWorkspaceId(string workspaceId);
         Task<List<WorkspaceCalendarEntity>> FindByWorkspaceAvailability(string workspaceId, DateTime startAt, DateTime until);
-        Task<WorkspaceCalendarBooking?> UpdateBooking(string id, List<WorkspaceCalendarBooking> workspaceCalendarBooking);
+        Task<WorkspaceCalendarBooking?> UpdateBooking(string id, int version, List<WorkspaceCalendarBooking> workspaceCalendarBooking);
         Task<long> SoftDeleteManyByAvailability(string workspaceId, DateTime startAt, DateTime until, IClientSessionHandle? session = null);
         Task<WorkspaceCalendarEntity?> UpdateAvailability(string id, bool availability);
     }

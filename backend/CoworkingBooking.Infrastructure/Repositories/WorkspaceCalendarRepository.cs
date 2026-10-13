@@ -129,12 +129,15 @@ namespace CoworkingBooking.Infraestructure
             return workspaceCalendarEntity;
         }
 
-        public async Task<WorkspaceCalendarBooking?> UpdateBooking(string id, List<WorkspaceCalendarBooking> workspaceCalendarBooking)
+        public async Task<WorkspaceCalendarBooking?> UpdateBooking(string id, int version, List<WorkspaceCalendarBooking> workspaceCalendarBooking)
         {
             var modelList = workspaceCalendarBooking.Select(workspaceCalendarBookingPersistenceMapper.ToModel);
-            var filter = Builders<WorkspaceCalendarModel>.Filter.Eq(wc => wc.Id, id);
+            var filter = Builders<WorkspaceCalendarModel>.Filter.Eq(wc => wc.Id, id) &
+                Builders<WorkspaceCalendarModel>.Filter.Eq(wc => wc.Version, version);
 
-            var update = Builders<WorkspaceCalendarModel>.Update.Set(wc => wc.Bookings, modelList);
+            var update = Builders<WorkspaceCalendarModel>.Update
+                .Set(wc => wc.Bookings, modelList)
+                .Inc(wc => wc.Version, 1);
 
             var options = new FindOneAndUpdateOptions<WorkspaceCalendarModel>
             {
@@ -146,7 +149,7 @@ namespace CoworkingBooking.Infraestructure
 
             if (result == null || result.Bookings == null)
             {
-                return null;
+                throw new ConcurrencyException();
             }
 
             return result.Bookings

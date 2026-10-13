@@ -12,6 +12,7 @@ namespace CoworkingBooking.Core.WorkspaceCalendar.Entities
         private List<WorkspaceCalendarBooking> _bookings = new List<WorkspaceCalendarBooking>();
         public DateTime CreatedAt { get; private set; } = default;
         public DateTime UpdatedAt { get; private set; } = default;
+        public int Version { get; private set; }
 
         public WorkspaceCalendarEntity(
             string workspaceId,
@@ -27,6 +28,8 @@ namespace CoworkingBooking.Core.WorkspaceCalendar.Entities
 
             IsFull = false;
             IsInactive = false;
+
+            Version = 0;
         }
 
         public static WorkspaceCalendarEntity Rehydrate(
@@ -38,7 +41,8 @@ namespace CoworkingBooking.Core.WorkspaceCalendar.Entities
             bool isFull,
             bool isInactive,
             DateTime createdAt,
-            DateTime updatedAt
+            DateTime updatedAt,
+            int version
         )
         {
             var entity = new WorkspaceCalendarEntity(workspaceId, startAt, endAt)
@@ -47,7 +51,8 @@ namespace CoworkingBooking.Core.WorkspaceCalendar.Entities
                 IsFull = isFull,
                 IsInactive = isInactive,
                 CreatedAt = createdAt,
-                UpdatedAt = updatedAt
+                UpdatedAt = updatedAt,
+                Version = version
             };
 
             entity._bookings = NormalizeBookings(bookings);

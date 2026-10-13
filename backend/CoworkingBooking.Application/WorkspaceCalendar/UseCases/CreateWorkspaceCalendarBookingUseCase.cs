@@ -5,6 +5,7 @@ using CoworkingBooking.Application.WorkspaceCalendar.Mappers;
 using CoworkingBooking.Application.WorkspaceCalendar.Ports;
 using CoworkingBooking.Core.WorkspaceCalendar.Repositories;
 using CoworkingBooking.Shared.Classes;
+using CoworkingBooking.Shared.Exceptions;
 using FluentValidation;
 using Microsoft.Extensions.Logging;
 
@@ -106,7 +107,7 @@ namespace CoworkingBooking.Application.WorkspaceCalendar.UseCases
                 }
 
                 var workspaceCalendarBookingInserted = await workspaceCalendarRepository
-                    .UpdateBooking(workspaceCalendarFound.Id, workspaceCalendarFound.Bookings.ToList());
+                    .UpdateBooking(workspaceCalendarFound.Id, workspaceCalendarFound.Version, workspaceCalendarFound.Bookings.ToList());
 
                 if (workspaceCalendarBookingInserted == null)
                 {
@@ -128,6 +129,11 @@ namespace CoworkingBooking.Application.WorkspaceCalendar.UseCases
                     logger.LogWarning(ex, ex.Message);
                     return Result<CreateWorkspaceCalendarBookingResponseDTO>
                         .Failure([ new Error(ex.Message, ErrorType.ValidationError) ]);
+                }
+                else if (ex is ConcurrencyException)
+                {
+                    logger.LogWarning(ex, ex.Message);
+                    return Result<CreateWorkspaceCalendarBookingResponseDTO>.Failure([ new Error(ex.Message, ErrorType.Conflict)]);
                 }
 
                 logger.LogError(ex, "Occured unexpected error.");

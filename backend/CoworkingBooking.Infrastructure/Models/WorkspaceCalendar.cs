@@ -47,6 +47,9 @@ namespace CoworkingBooking.Infraestructure.Models
         [BsonDateTimeOptions(Kind = DateTimeKind.Utc)]
         public DateTime UpdatedAt { get; set; }
 
+        [BsonElement("version")]
+        [BsonRepresentation(BsonType.Int32)]
+        public int Version { get; set; } = 0;
     }
 
     [BsonIgnoreExtraElements]
