@@ -114,6 +114,74 @@ docker build -f CoworkingBooking.Workers/Dockerfile -t cwb-workers .
 
 Scalar e OpenAPI ficam disponíveis apenas no ambiente `Development`.
 
+## Kubernetes (ambiente local)
+
+Os manifests em `backend/k8s` executam a API e o Worker em um cluster Kubernetes local. Este roteiro usa o Kubernetes do Docker Desktop e mantém MongoDB, Redis, LocalStack e Seq no Docker Compose, acessíveis aos pods por `host.docker.internal`.
+
+### Pré-requisitos
+
+- Docker Desktop com Kubernetes habilitado e contexto `docker-desktop` selecionado (`kubectl config use-context docker-desktop`).
+- `kubectl` instalado.
+- O arquivo `backend/docker/mongo-keyfile` gerado conforme o passo 1 deste README.
+
+### Subir
+
+Na raiz do repositório, inicie primeiro os serviços externos usados pelos pods:
+
+```bash
+cd backend
+docker compose up -d
+```
+
+Ainda em `backend/`, construa as imagens com os nomes esperados pelos Deployments. O cluster Kubernetes do Docker Desktop usa as imagens locais do Docker:
+
+```bash
+docker build -f CoworkingBooking.Api/Dockerfile -t cwb-api:latest .
+docker build -f CoworkingBooking.Workers/Dockerfile -t cwb-workers:latest .
+```
+
+Crie o namespace e o ConfigMap:
+
+```bash
+kubectl apply -f k8s/namespace-configmap.yaml
+```
+
+Crie o Secret exigido pelos Deployments. Substitua os valores de exemplo pelos da sua instalação local; a URI Mongo deve listar os três nós do replica set e os hosts devem ser acessíveis de dentro dos pods:
+
+```bash
+kubectl create secret generic coworking-booking-secrets \
+  -n coworking-booking \
+  --from-literal=MONGODB_CONNECTION_STRING='mongodb://<usuario>:<senha>@host.docker.internal:27017,host.docker.internal:27018,host.docker.internal:27019/?replicaSet=rs0&authSource=admin' \
+  --from-literal=REDIS_CONNECTION_STRING='host.docker.internal:6379,user=api,password=<senha-redis>,abortConnect=false' \
+  --from-literal=AWS_ACCESS_KEY='<chave-localstack>' \
+  --from-literal=AWS_SECRET_KEY='<segredo-localstack>' \
+  --from-literal=AWS_SERVICE_URL='http://host.docker.internal:4566'
+```
+
+Aplique os Deployments e o Service da API:
+
+```bash
+kubectl apply -f k8s/api.yaml
+kubectl apply -f k8s/worker.yaml
+kubectl get pods -n coworking-booking
+```
+
+A API é exposta localmente por port-forward:
+
+```bash
+kubectl port-forward -n coworking-booking svc/coworking-booking-api 5058:80
+```
+
+Com o comando ativo, acesse `http://localhost:5058/health/ready`. Para interromper a aplicação, remova os recursos Kubernetes e, se desejar, pare a infraestrutura Docker:
+
+```bash
+kubectl delete -f k8s/worker.yaml
+kubectl delete -f k8s/api.yaml
+kubectl delete -f k8s/namespace-configmap.yaml
+docker compose down
+```
+
+O ConfigMap aponta Seq e Keycloak para `host.docker.internal`; ajuste essas URLs e os valores do Secret conforme os endereços e credenciais do seu ambiente. Os Secrets criados dessa forma servem para desenvolvimento local; use o gerenciador de secrets do seu cluster em ambientes compartilhados.
 ## Testes
 
 ```bash
