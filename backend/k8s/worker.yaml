@@ -1,0 +1,72 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: coworking-booking-worker
+  namespace: coworking-booking
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: coworking-booking-worker
+  template:
+    metadata:
+      labels:
+        app: coworking-booking-worker
+    spec:
+      terminationGracePeriodSeconds: 60
+      volumes:
+        - name: tmp
+          emptyDir: {}
+      containers:
+        - name: worker
+          image: cwb-workers:latest
+          imagePullPolicy: IfNotPresent
+          envFrom:
+            - configMapRef:
+                name: coworking-booking-config
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+          env:
+            - name: Application__Name
+              value: "CoworkingBooking.Workers"
+            - name: MongoDbSettings__ConnectionString
+              valueFrom:
+                secretKeyRef:
+                  name: coworking-booking-secrets
+                  key: MONGODB_CONNECTION_STRING
+            - name: RedisSettings__ConnectionString
+              valueFrom:
+                secretKeyRef:
+                  name: coworking-booking-secrets
+                  key: REDIS_CONNECTION_STRING
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: coworking-booking-secrets
+                  key: AWS_ACCESS_KEY
+
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: coworking-booking-secrets
+                  key: AWS_SECRET_KEY
+            - name: AWS__ServiceURL
+              valueFrom:
+                secretKeyRef:
+                  name: coworking-booking-secrets
+                  key: AWS_SERVICE_URL
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: "1"
+              memory: 512Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            capabilities:
+              drop:
+                - ALL

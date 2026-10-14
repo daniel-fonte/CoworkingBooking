@@ -1,0 +1,106 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: coworking-booking-api
+  namespace: coworking-booking
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: coworking-booking-api
+  template:
+    metadata:
+      labels:
+        app: coworking-booking-api
+    spec:
+      volumes:
+        - name: tmp
+          emptyDir: {}
+      containers:
+        - name: api
+          image: cwb-api:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+          envFrom:
+            - configMapRef:
+                name: coworking-booking-config
+          env:
+            - name: Application__Name
+              value: "CoworkingBooking.Api"
+            - name: MongoDbSettings__ConnectionString
+              valueFrom:
+                secretKeyRef:
+                  name: coworking-booking-secrets
+                  key: MONGODB_CONNECTION_STRING
+            - name: RedisSettings__ConnectionString
+              valueFrom:
+                secretKeyRef:
+                  name: coworking-booking-secrets
+                  key: REDIS_CONNECTION_STRING
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: coworking-booking-secrets
+                  key: AWS_ACCESS_KEY
+
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: coworking-booking-secrets
+                  key: AWS_SECRET_KEY
+            - name: AWS__ServiceURL
+              valueFrom:
+                secretKeyRef:
+                  name: coworking-booking-secrets
+                  key: AWS_SERVICE_URL
+          startupProbe:
+            httpGet:
+              path: /health/live
+              port: http
+            periodSeconds: 5
+            failureThreshold: 30
+          livenessProbe:
+            httpGet:
+              path: /health/live
+              port: http
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /health/ready
+              port: http
+            periodSeconds: 5
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: "1"
+              memory: 512Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            capabilities:
+              drop:
+                - ALL
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: coworking-booking-api
+  namespace: coworking-booking
+spec:
+  type: ClusterIP
+  selector:
+    app: coworking-booking-api
+  ports:
+    - name: http
+      port: 80
+      targetPort: http
+      protocol: TCP

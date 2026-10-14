@@ -1,4 +1,5 @@
 using CoworkingBooking.Api.Classes;
+using CoworkingBooking.Api.Extensions;
 using CoworkingBooking.Api.Providers;
 using CoworkingBooking.Application;
 using CoworkingBooking.Application.Providers;
@@ -22,8 +23,14 @@ namespace CoworkingBooking.Api.DependencyInjection
                 .AddJwtBearer(opts =>
                 {
                     opts.Authority = configuration["Keycloak:Authority"];
+
+                    opts.MetadataAddress = configuration["Keycloak:MetadataAddress"];
+
                     opts.Audience = configuration["Keycloak:Audience"];
-                    opts.RequireHttpsMetadata = false;
+
+                    opts.RequireHttpsMetadata = false; // Apenas desenvolvimento local
+
+                    opts.Backchannel = new HttpClient(new KeycloakBackchannelHandler());
                 });
 
             services.AddAuthorization();
