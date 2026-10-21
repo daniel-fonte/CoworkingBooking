@@ -73,11 +73,30 @@
             "name": "Coworking Booking API",
             "enabled": true,
             "protocol": "openid-connect",
-            "publicClient": true,
-            "bearerOnly": false,
+            "publicClient": false,
             "standardFlowEnabled": false,
             "implicitFlowEnabled": false,
-            "directAccessGrantsEnabled": true,
+            "directAccessGrantsEnabled": false
+           
+        },
+        {
+            "clientId": "coworking-booking-frontend",
+            "enabled": true,
+            "protocol": "openid-connect",
+            "publicClient": true,
+            "bearerOnly": false,
+            "standardFlowEnabled": true,
+            "implicitFlowEnabled": false,
+            "directAccessGrantsEnabled": false,
+            "redirectUris": [
+                "http://localhost:5173/*"
+            ],
+            "webOrigins": [
+                "http://localhost:5173"
+            ],
+            "attributes": {
+                "pkce.code.challenge.method": "S256"
+            },
             "defaultClientScopes": [
                 "web-origins",
                 "acr",
