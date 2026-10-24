@@ -5,7 +5,7 @@ export default function Login() {
 
     return (
         <div className="login">
-            <button onClick={() => keycloak.login()}>Login</button>
+            <button onClick={() => keycloak.login({ redirectUri: `${window.location.origin}/` })}>Login</button>
         </div>
     )
 }
